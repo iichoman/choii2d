@@ -3,10 +3,11 @@
 
  ![ss_bf20692e69cfef2da4b6b4096f42823a5283701c 1920x1080](https://github.com/user-attachments/assets/5575ca7a-eb39-4095-b583-a43e030ad55d)
 ![ss_e92a2f46bb81fc745684204858ecc1284b3eeae4 600x338](https://github.com/user-attachments/assets/e9cc3211-bc4b-4f46-bb7f-7541e3b0ef3d)
-
+(출처: spelunky2 steam 페이지 https://store.steampowered.com/app/418530/Spelunky_2/)
 ## 게임 실행 흐름
 
-![ss_bf20692e69cfef2da4b6b4096f42823a5283701c 1920x1080](https://github.com/user-attachments/assets/843f08b3-4972-4684-81c3-1d06457a53a1)
+![제목 없음](https://github.com/user-attachments/assets/70227e56-4b8e-4b78-94f5-524e7440e0f8)
+
 
  빨간 테두리가 화면에 표시되는 부분이다.
  시작문에서 플레이어가 스폰되어 시작된다. 인터페이스에 체력과 아이템의 남은 수가 표시되며 체력이 모두 소진되면 게임 오버된다.

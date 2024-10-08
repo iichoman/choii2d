@@ -1,6 +1,13 @@
 ## 게임 소개
  2020년 9월에 출시한 spelunky2의 카피게임이다. spelunky2는 2d 횡스크롤 방식의 로그라이크 계열의 게임으로 스테이지를 진행하면서 몬스터를 피해 아이템을 파밍하며 다음스테이지로 통과하는 게임이다.
+
+ ![ss_bf20692e69cfef2da4b6b4096f42823a5283701c 1920x1080](https://github.com/user-attachments/assets/5575ca7a-eb39-4095-b583-a43e030ad55d)
+![ss_e92a2f46bb81fc745684204858ecc1284b3eeae4 600x338](https://github.com/user-attachments/assets/e9cc3211-bc4b-4f46-bb7f-7541e3b0ef3d)
+
 ## 게임 실행 흐름
+
+![ss_bf20692e69cfef2da4b6b4096f42823a5283701c 1920x1080](https://github.com/user-attachments/assets/843f08b3-4972-4684-81c3-1d06457a53a1)
+
  빨간 테두리가 화면에 표시되는 부분이다.
  시작문에서 플레이어가 스폰되어 시작된다. 인터페이스에 체력과 아이템의 남은 수가 표시되며 체력이 모두 소진되면 게임 오버된다.
 

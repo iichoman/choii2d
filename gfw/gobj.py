@@ -259,7 +259,7 @@ class MapBackground(ScrollBackground):
         """스크롤 속도에 맞게 스크롤 위치를 업데이트하는 함수"""
         self.x += gfw.frame_time * self.scroll_dx  # 프레임 시간에 따른 스크롤 업데이트
         self.y += gfw.frame_time * self.scroll_dy  # 프레임 시간에 따른 스크롤 업데이트
-        self.check_player_landing()
+        #self.check_player_landing()
 
     def draw(self):
         """맵을 그리는 함수. 모든 레이어를 순차적으로 그립니다."""
@@ -334,11 +334,11 @@ class MapBackground(ScrollBackground):
                         t_bb = left, dst_top - self.tilesize, left + self.tilesize, dst_top
                         collides = gfw.collides_whip(t_bb, player)
                         if collides:
-                            if player.state == 1:
+                            #if player.state == 1:
                                 player.y = dst_top+58
                                 player.dy = 0
                                 player.state = 0
-                        
+
 
 
                     left += self.tilesize  # 다음 타일을 그릴 위치로 이동

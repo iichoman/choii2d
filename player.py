@@ -24,11 +24,14 @@ class Player(gfw.Sprite):
     MAX_JUMP_POWER = 3
 
     def __init__(self):
-        super().__init__('res/char/char.png', 256, 128)
-        self.time = 0  # 시간 (초 단위)
+        super().__init__('res/char/char.png', 300, 300)
+        self.time_move = 0  # 시간 (초 단위)
         self.time_atk = 0
+        self.time_jump = 0
         self.frame = 0
+        self.frame_move = 0
         self.frame_atk = 0
+        self.frame_jump = 0
         self.dx, self.dy = 0, 0  # x, y 방향 속도
         self.speed = 500  # 기본 이동 속도
         
@@ -81,25 +84,30 @@ class Player(gfw.Sprite):
         draw_rectangle(*self.get_draw_atk_bb())
         
     def update(self):
-        self.time += gfw.frame_time
+        self.time_move += gfw.frame_time
+        self.time_jump += gfw.frame_time
         self.time_atk += gfw.frame_time
 
         fps = 10
-        self.frame_jump = round(self.time * fps) % 8
-        self.frame_move = round(self.time * fps*2) % 8
-         
+
+        self.frame_move = round(self.time_move * fps*2) % 8
+
+        self.frame_jump = round(self.time_jump * fps) % 8
         if self.attack == True:
             self.frame_atk = round(self.time_atk * fps*1.5) % 7
 
         self.x += self.dx * self.speed * gfw.frame_time
         self.y += self.dy * self.speed * gfw.frame_time
 
-        # 중력 처리
-        if self.state == 1: 
-            self.dy -= self.GRAVITY * gfw.frame_time
+        # 중력 처리  
+        self.dy -= self.GRAVITY * gfw.frame_time
 
-            #self.y -= self.GRAVITY
-        
+        if self.dy != 0:
+            self.state = 1
+            
+     
+        print(self.frame_jump)
+
         # 죽음
         if 0 >= self.hp:
             self.state = 4
@@ -193,7 +201,7 @@ class Player(gfw.Sprite):
             elif e.key == SDLK_LSHIFT:
                 self.speed = 300
             elif e.key == SDLK_z:  
-                self.time = 0
+                self.time_jump = 0
                 self.JUMP_POWER = 3   
                 self.jump()
             elif e.key == SDLK_x:

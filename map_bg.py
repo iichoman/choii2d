@@ -5,7 +5,7 @@ from gfw import *
 class TestScene:
     def enter(self):
         self.world = World()
-        self.map_bg = MapBackground('res/earth.json', fitsWidth=False)
+        self.map_bg = MapBackground('res/earth3.json', fitsWidth=False)
         self.world.append(self.map_bg, 0)
         # self.shows_bounding_box = True
     def exit(self): pass

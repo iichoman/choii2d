@@ -24,7 +24,7 @@ class Player(gfw.Sprite):
     MAX_JUMP_POWER = 3
 
     def __init__(self):
-        super().__init__('res/char/char.png', 128, 128)
+        super().__init__('res/char/char.png', 256, 128)
         self.time = 0  # 시간 (초 단위)
         self.time_atk = 0
         self.frame = 0
@@ -40,7 +40,11 @@ class Player(gfw.Sprite):
                             
         self.attack = False
         #self.attack_box = (0,0,0,0)
-        self.ground_y = 128  # 바닥 위치 (y=0) 수정 필요
+        #self.ground_y = 128  # 바닥 위치 (y=0) 수정 필요
+        self.ground_y = float('-inf')
+        self.on_grounds = False
+        #self.foot = self.y - 58
+
         self.move = 0
         self.flip = ' '
         self.image_flipped = load_image('res/char/char_flip.png')
@@ -51,6 +55,8 @@ class Player(gfw.Sprite):
 
         self.whip_x = 0
         self.whip_y = 0
+
+
     def draw(self):
         frame_move = self.frame_move * 128 + 128
         frame_jump = self.frame_jump * 128
@@ -58,7 +64,7 @@ class Player(gfw.Sprite):
         #move = self.move
         
         screen_pos = self.bg.to_screen(self.x, self.y)
-        
+
         if self.attack == True:
             # 채찍 그리기
             self.image.clip_composite_draw(frame_atk + 1280, 384, 128, 128, 0, self.flip, self.whip_x, self.whip_y, 96, 96)
@@ -93,7 +99,7 @@ class Player(gfw.Sprite):
             self.dy -= self.GRAVITY * gfw.frame_time
 
             #self.y -= self.GRAVITY
-            
+        
         # 죽음
         if 0 >= self.hp:
             self.state = 4
@@ -165,7 +171,7 @@ class Player(gfw.Sprite):
             #self.whip_y = -999
 
         #test code here
-        print(self.x,", ",self.y)
+        #print(self.x,", ",self.y)
         #print(self.frame_atk)                   
         #print (self.whip_x,", ",self.whip_y)
     def adjust_delta(self, x, y):
@@ -212,6 +218,7 @@ class Player(gfw.Sprite):
                     self.dy *= 0.5
 
     def jump(self): 
+        self.ground_y = float('-inf')
         if self.state == 0:  
             self.state = 1  
             self.dy = self.JUMP_POWER  

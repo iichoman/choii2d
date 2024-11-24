@@ -202,93 +202,160 @@ class MapBackground(ScrollBackground):
     def __init__(self, filename, tilesize=96, wraps=False, fitsWidth=False, fitsHeight=False, dx=0, dy=0):
         super().__init__(None)
         self.filename = filename
-        self.folder = _get_folder(filename)
+        self.folder = _get_folder(filename)  # 파일 경로에서 폴더명 추출
         with open(filename, 'r') as f:
-            mapjson = json.load(f)
-        self.tmap = tiledmap.map_from_dict(mapjson)
+            mapjson = json.load(f)  # JSON 파일을 읽어서 맵 데이터를 파싱
+        self.tmap = tiledmap.map_from_dict(mapjson)  # 맵 데이터를 Map 객체로 변환
+
+        # 모든 타일셋 이미지 로드
         for ts in self.tmap.tilesets:
-            ts.tile_image = gfw.image.load(f'{self.folder}/{ts.image}')
+            ts.tile_image = gfw.image.load(f'{self.folder}/{ts.image}')  # 타일셋 이미지 파일을 로드
+            print(f"Loading tileset image: {ts.image}")
+
+        # 화면 크기에 맞게 타일 크기를 조정할 옵션 (미사용 상태)
         if fitsWidth:
             #tilesize = math.ceil(get_canvas_width() / self.tmap.width)
             pass
         elif fitsHeight:
             #tilesize = math.ceil(get_canvas_height() / self.tmap.height)
             pass
-        self.tilesize = tilesize
-        self.wraps = wraps
-        self.x, self.y = 0, 0
-        self.scroll_dx, self.scroll_dy = dx, dy
-        self.layer = self.tmap.layers[0] # first layer only
-        self.ts = self.tmap.tilesets[0] # first tileset only
-        self.ts.rows = math.ceil(self.ts.tilecount / self.ts.columns) # 타일셋의 세로방향 타일 갯수를 구한다. 
 
+        self.tilesize = tilesize  # 타일 크기 설정
+        self.wraps = wraps  # 맵이 반복될지 여부
+        self.x, self.y = 0, 0  # 맵의 초기 스크롤 위치
+        self.scroll_dx, self.scroll_dy = dx, dy  # 스크롤 속도 설정
+        
+        # 모든 레이어를 리스트로 저장
+        self.layers = self.tmap.layers
+
+        # 첫 번째 타일셋에 대한 설정 (타일셋의 행 계산)
+        #self.ts = self.tmap.tilesets[0]  # 첫 번째 타일셋
+        #self.ts.rows = math.ceil(self.ts.tilecount / self.ts.columns)  # 타일셋의 세로 방향 타일 갯수 계산
+
+        # 스크롤 한계를 설정 (맵 크기에 맞춰 스크롤을 제한)
         self.max_scroll_x = self.tmap.width * self.tilesize
         self.max_scroll_y = self.tmap.height * self.tilesize
+
     def scroll(self, dx, dy):
+        """스크롤을 dx, dy 만큼 이동시키는 함수"""
         self.scrollTo(self.x + dx, self.y + dy)
 
     def scrollTo(self, x, y):
-        self.x = clamp(0, x, self.max_scroll_x)
-        self.y = clamp(0, y, self.max_scroll_y)
+        """스크롤 위치를 (x, y)로 이동시키는 함수. 스크롤 한계를 벗어나지 않도록 제한."""
+        self.x = clamp(0, x, self.max_scroll_x)  # x 좌표를 제한
+        self.y = clamp(0, y, self.max_scroll_y)  # y 좌표를 제한
+
     def show(self, x, y):
-        hw, hh = get_canvas_width() // 2, get_canvas_height() // 2
-        self.x = clamp(0, x - hw, self.max_scroll_x)
-        self.y = clamp(0, y - hh, self.max_scroll_y)
+        """스크롤 위치를 화면 중앙에 맞추는 함수"""
+        hw, hh = get_canvas_width() // 2, get_canvas_height() // 2  # 화면의 가로, 세로 절반 크기
+        self.x = clamp(0, x - hw, self.max_scroll_x)  # x 위치를 중앙으로 맞춤
+        self.y = clamp(0, y - hh, self.max_scroll_y)  # y 위치를 중앙으로 맞춤
 
     def set_scroll_speed(self, dx, dy):
+        """스크롤 속도를 설정하는 함수"""
         self.scroll_dx, self.scroll_dy = dx, dy
-    def update(self): 
-        self.x += gfw.frame_time * self.scroll_dx
-        self.y += gfw.frame_time * self.scroll_dy
-    def draw(self):
-        layer = self.layer
-        cw,ch = get_canvas_width(), get_canvas_height()
 
+    def update(self):
+        """스크롤 속도에 맞게 스크롤 위치를 업데이트하는 함수"""
+        self.x += gfw.frame_time * self.scroll_dx  # 프레임 시간에 따른 스크롤 업데이트
+        self.y += gfw.frame_time * self.scroll_dy  # 프레임 시간에 따른 스크롤 업데이트
+        self.check_player_landing()
+
+    def draw(self):
+        """맵을 그리는 함수. 모든 레이어를 순차적으로 그립니다."""
+        cw, ch = get_canvas_width(), get_canvas_height()  # 화면 크기
+
+        # 현재 스크롤 위치에 맞춰 시작 좌표를 계산
         sx, sy = round(self.x), round(self.y)
+
+        # 맵이 반복되는 경우 (wraps가 True인 경우) 스크롤 위치가 맵의 끝을 넘어가면 다시 처음으로 돌아가도록 처리
         if self.wraps:
             map_total_width = self.tmap.width * self.tilesize
             map_total_height = self.tmap.height * self.tilesize
-            sx %= map_total_width;
+            sx %= map_total_width
             if sx < 0:
-                sx += map_total_width;
-            sy %= map_total_height;
+                sx += map_total_width
+            sy %= map_total_height
             if sy < 0:
-                sy += map_total_width;
+                sy += map_total_width
 
-        tile_x = sx // self.tilesize # 그려질 타일 크기 기준 어느 타일부터 시작할지
-        tile_y = sy // self.tilesize
+        # 그릴 타일의 시작 위치 (타일 기준)
+        tile_x = sx // self.tilesize  # 시작 타일의 x 좌표
+        tile_y = sy // self.tilesize  # 시작 타일의 y 좌표
 
-        beg_x = -(sx % self.tilesize);
-        beg_y = -(sy % self.tilesize);
+        # 화면 상에 그려질 타일의 좌측 상단 위치를 계산
+        beg_x = -(sx % self.tilesize)
+        beg_y = -(sy % self.tilesize)
 
-        dst_left, dst_top = beg_x, ch - beg_y
-        ty = tile_y
-        while dst_top > 0:
-            tx = tile_x
-            left = dst_left
-            while left < cw:
-                t_index = ty * layer.width + tx # 그 위치의 타일정보는 data[t_index] 에 있다
-                tile = layer.data[t_index]   # 그려야 할 타일 번호를 구한다
-                sx = (tile - 1) % self.ts.columns  # 해당 번호의 타일은 타일셋이미지 에서 왼쪽으로부터 sx 번째에 있다
-                sy = (tile - 1) // self.ts.columns # 해당 번호의 타일은 타일셋이미지 에서 위로부터 sy 번째에 있다
-                src_left = self.ts.margin + sx * (self.ts.tilewidth + self.ts.spacing) # 타일은 이미지의 src_left 번째 픽셀부터 시작 = 소스 x 좌표
-                src_botm = self.ts.margin + (self.ts.rows - sy - 1) * (self.ts.tileheight + self.ts.spacing) # 소스 y 좌표.
+        # 모든 레이어를 그리기 위한 반복문
+        player = gfw.top().player
+        for layer in self.layers:
+            dst_left, dst_top = beg_x, ch - beg_y  # 타일을 그릴 위치 설정
+            ty = tile_y  # 타일 y 좌표 초기화
+            while dst_top > 0:
+                tx = tile_x  # 타일 x 좌표 초기화
+                left = dst_left
+                while left < cw:
+                    t_index = ty * layer.width + tx  # 현재 타일의 인덱스를 계산
+                    tile = layer.data[t_index]  # 해당 타일 번호를 가져옴
+                    if tile == 0:  # 타일이 0이면 빈 타일이므로 스킵
+                        tx += 1
+                        left += self.tilesize
+                        continue
+                
+                    # 모든 타일셋을 순차적으로 검색
+                    for ts in self.tmap.tilesets:
+                        ts.rows = math.ceil(ts.tilecount / ts.columns)
 
-                dst_botm = dst_top - self.tilesize
-                self.ts.tile_image.clip_draw_to_origin(
-                    src_left, src_botm, self.ts.tilewidth, self.ts.tileheight, 
-                    left, dst_botm, self.tilesize, self.tilesize)
+                        # 해당 타일셋에서 타일 번호를 찾기
+                        if tile >= ts.firstgid and tile < ts.firstgid + ts.tilecount:
+                            if ts.tile_image is None:
+                                print(f"Skipping tile {tile} due to missing tileset image.")
+                                continue  # 이미지가 없는 경우 해당 타일을 건너뜀
 
-                left += self.tilesize
-                tx += 1
-                if tx >= layer.width:
-                    if not self.wraps: break
-                    tx -= layer.width
-            dst_top -= self.tilesize
-            ty += 1
-            if ty >= layer.height:
-                if not self.wraps: break
-                ty -= layer.height
+                            sx = (tile - ts.firstgid) % ts.columns  # 타일셋에서의 x 좌표
+                            sy = (tile - ts.firstgid) // ts.columns  # 타일셋에서의 y 좌표
+                            src_left = ts.margin + sx * (ts.tilewidth + ts.spacing)  # 타일 이미지의 좌측 위치
+                            src_botm = ts.margin + (ts.rows - sy - 1) * (ts.tileheight + ts.spacing)  # 타일 이미지의 하단 위치
+
+                            dst_botm = dst_top - self.tilesize  # 화면 상의 타일 하단 위치
+                            # 타일 그리기 (타일셋 이미지에서 해당 타일을 잘라서 화면에 그리기)
+                            ts.tile_image.clip_draw_to_origin(
+                                src_left, src_botm, ts.tilewidth, ts.tileheight,
+                                left, dst_botm, self.tilesize, self.tilesize
+                            )
+                            break  # 타일셋을 찾으면 더 이상 검색하지 않음
+                    #print(layer.name)
+                    #if tile != 0 :  # 빈 타일이 아니면
+                    if layer.name == 'terrain':
+                        # 타일 위치를 (left, dst_top)에서 시작
+                        # 타일 크기는 self.tilesize
+                        gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)  # 빨간색으로 바운딩 박스 그리기
+                        t_bb = left, dst_top - self.tilesize, left + self.tilesize, dst_top
+                        collides = gfw.collides_whip(t_bb, player)
+                        if collides:
+                            if player.state == 1:
+                                player.y = dst_top+58
+                                player.dy = 0
+                                player.state = 0
+                        
+
+
+                    left += self.tilesize  # 다음 타일을 그릴 위치로 이동
+                    tx += 1
+                    if tx >= layer.width:  # 한 줄을 다 그리면
+                        if not self.wraps:  # wraps가 False이면 반복하지 않음
+                            break
+                        tx -= layer.width  # wraps가 True이면 다음 줄의 첫 번째 타일로 이동
+                dst_top -= self.tilesize  # 화면 상의 y 좌표를 한 칸 아래로 이동
+                ty += 1
+                if ty >= layer.height:  # 모든 타일을 다 그렸으면
+                    if not self.wraps:  # wraps가 False이면 반복하지 않음
+                        break
+                    ty -= layer.height  # wraps가 True이면 다시 첫 번째 줄로 돌아감
+
+        # 바운딩 박스 그리기
+
     def to_screen(self, x, y):
         return x - self.x, y - self.y
 
@@ -297,3 +364,17 @@ class MapBackground(ScrollBackground):
 
     def get_bb(self):
         return 0, 0, 0, 0
+    def check_player_landing(self):
+        player = gfw.top().player  # 플레이어 객체
+
+        # 플레이어의 Bounding Box (BB) 구하기
+        pl, pb, pr, pt = player.get_bb()
+
+        for layer in self.layers:
+            if layer.name == 'terrain':
+                pass
+                    # 타일 위치를 (left, dst_top)에서 시작
+                    # 타일 크기는 self.tilesize
+                    #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)  # 빨간색으로 바운딩 박스 그리기 
+
+        

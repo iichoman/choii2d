@@ -69,7 +69,7 @@ class Monster(gfw.Sprite):
             
         elif self.state == 0:
             self.dx = 0
-        print(self.hp)
+        #print(self.hp)
         self.check_collision_with_whip()
         self.sense_player()
     

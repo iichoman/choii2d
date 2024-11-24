@@ -165,7 +165,7 @@ class Player(gfw.Sprite):
             #self.whip_y = -999
 
         #test code here
-        #print(self.x,", ",self.y)
+        print(self.x,", ",self.y)
         #print(self.frame_atk)                   
         #print (self.whip_x,", ",self.whip_y)
     def adjust_delta(self, x, y):

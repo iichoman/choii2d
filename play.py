@@ -3,10 +3,15 @@ from gfw import *
 from player import Player
 from monster import Monster
 
+# map test
+#from settings import *
+#from level import Level
+#level = Level(level_data, surface)
+
 world = World(['bg', 'player', 'monster'])
 
-canvas_width = 1024
-canvas_height = 768
+canvas_width = 1920
+canvas_height = 1080
 #canvas_width = 1280
 #canvas_height = 960
 shows_bounding_box = True
@@ -22,9 +27,9 @@ def enter():
         bg = player.bg
         world.bg = bg
         return
-
-    #bg = ScrollBackground('res/maps/bg_cave.png')
-    bg = ScrollBackground('res/maps/ttt.png')
+    
+    bg = gfw.MapBackground('res/earth3.json', fitsWidth=True, fitsHeight=True)
+    #bg = ScrollBackground('res/maps/ttt.png')
     
     world.append(bg, world.layer.bg)
     world.bg = bg    

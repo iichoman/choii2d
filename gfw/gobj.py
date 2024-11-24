@@ -1,6 +1,7 @@
 import time
 from pico2d import *
 import gfw
+from . import tiledmap
 
 class Gauge:
     def __init__(self, fg_fname, bg_fname):
@@ -192,3 +193,107 @@ class InfiniteScrollBackground(ScrollBackground):
 
         # quadrant 1
         self.image.clip_draw_to_origin(0, 0, cw - q3w, ch - q3h, q3w, q3h)
+
+def _get_folder(filename):
+    idx = filename.rfind('/')
+    return '.' if idx < 0 else filename[:idx]
+
+class MapBackground(ScrollBackground):
+    def __init__(self, filename, tilesize=96, wraps=False, fitsWidth=False, fitsHeight=False, dx=0, dy=0):
+        super().__init__(None)
+        self.filename = filename
+        self.folder = _get_folder(filename)
+        with open(filename, 'r') as f:
+            mapjson = json.load(f)
+        self.tmap = tiledmap.map_from_dict(mapjson)
+        for ts in self.tmap.tilesets:
+            ts.tile_image = gfw.image.load(f'{self.folder}/{ts.image}')
+        if fitsWidth:
+            #tilesize = math.ceil(get_canvas_width() / self.tmap.width)
+            pass
+        elif fitsHeight:
+            #tilesize = math.ceil(get_canvas_height() / self.tmap.height)
+            pass
+        self.tilesize = tilesize
+        self.wraps = wraps
+        self.x, self.y = 0, 0
+        self.scroll_dx, self.scroll_dy = dx, dy
+        self.layer = self.tmap.layers[0] # first layer only
+        self.ts = self.tmap.tilesets[0] # first tileset only
+        self.ts.rows = math.ceil(self.ts.tilecount / self.ts.columns) # 타일셋의 세로방향 타일 갯수를 구한다. 
+
+        self.max_scroll_x = self.tmap.width * self.tilesize
+        self.max_scroll_y = self.tmap.height * self.tilesize
+    def scroll(self, dx, dy):
+        self.scrollTo(self.x + dx, self.y + dy)
+
+    def scrollTo(self, x, y):
+        self.x = clamp(0, x, self.max_scroll_x)
+        self.y = clamp(0, y, self.max_scroll_y)
+    def show(self, x, y):
+        hw, hh = get_canvas_width() // 2, get_canvas_height() // 2
+        self.x = clamp(0, x - hw, self.max_scroll_x)
+        self.y = clamp(0, y - hh, self.max_scroll_y)
+
+    def set_scroll_speed(self, dx, dy):
+        self.scroll_dx, self.scroll_dy = dx, dy
+    def update(self): 
+        self.x += gfw.frame_time * self.scroll_dx
+        self.y += gfw.frame_time * self.scroll_dy
+    def draw(self):
+        layer = self.layer
+        cw,ch = get_canvas_width(), get_canvas_height()
+
+        sx, sy = round(self.x), round(self.y)
+        if self.wraps:
+            map_total_width = self.tmap.width * self.tilesize
+            map_total_height = self.tmap.height * self.tilesize
+            sx %= map_total_width;
+            if sx < 0:
+                sx += map_total_width;
+            sy %= map_total_height;
+            if sy < 0:
+                sy += map_total_width;
+
+        tile_x = sx // self.tilesize # 그려질 타일 크기 기준 어느 타일부터 시작할지
+        tile_y = sy // self.tilesize
+
+        beg_x = -(sx % self.tilesize);
+        beg_y = -(sy % self.tilesize);
+
+        dst_left, dst_top = beg_x, ch - beg_y
+        ty = tile_y
+        while dst_top > 0:
+            tx = tile_x
+            left = dst_left
+            while left < cw:
+                t_index = ty * layer.width + tx # 그 위치의 타일정보는 data[t_index] 에 있다
+                tile = layer.data[t_index]   # 그려야 할 타일 번호를 구한다
+                sx = (tile - 1) % self.ts.columns  # 해당 번호의 타일은 타일셋이미지 에서 왼쪽으로부터 sx 번째에 있다
+                sy = (tile - 1) // self.ts.columns # 해당 번호의 타일은 타일셋이미지 에서 위로부터 sy 번째에 있다
+                src_left = self.ts.margin + sx * (self.ts.tilewidth + self.ts.spacing) # 타일은 이미지의 src_left 번째 픽셀부터 시작 = 소스 x 좌표
+                src_botm = self.ts.margin + (self.ts.rows - sy - 1) * (self.ts.tileheight + self.ts.spacing) # 소스 y 좌표.
+
+                dst_botm = dst_top - self.tilesize
+                self.ts.tile_image.clip_draw_to_origin(
+                    src_left, src_botm, self.ts.tilewidth, self.ts.tileheight, 
+                    left, dst_botm, self.tilesize, self.tilesize)
+
+                left += self.tilesize
+                tx += 1
+                if tx >= layer.width:
+                    if not self.wraps: break
+                    tx -= layer.width
+            dst_top -= self.tilesize
+            ty += 1
+            if ty >= layer.height:
+                if not self.wraps: break
+                ty -= layer.height
+    def to_screen(self, x, y):
+        return x - self.x, y - self.y
+
+    def from_screen(self, x, y):
+        return x + self.x, y + self.y
+
+    def get_bb(self):
+        return 0, 0, 0, 0

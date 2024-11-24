@@ -2,7 +2,8 @@
 # state:
 #    0 - normal
 #    1 - jump
-#    2 - hurt
+#    2 - hurt(stunned)
+#    3 - dead
 # 공격 범위 시간 0.5초?
 # 앞 뒤 각각 0.25초 해야될듯
 # 현재 필요한 것: 걷는 모션, 공격(x키), 공격 모션, 
@@ -18,6 +19,7 @@ import gfw
 
 class Player(gfw.Sprite):
     GRAVITY = 12  # 중력 값
+    FRICTION = 10 # 마찰력
     JUMP_POWER = 0 # 점프 힘
     MAX_JUMP_POWER = 3
 
@@ -29,10 +31,15 @@ class Player(gfw.Sprite):
         self.frame_atk = 0
         self.dx, self.dy = 0, 0  # x, y 방향 속도
         self.speed = 500  # 기본 이동 속도
-       
-        self.state = 0  # (0: 기본, 1: 점프, 2: 피해, 4: dead)
+        
+        self.state = 0  # (0: 기본, 1: 점프, 2: 피해, 3: 스턴, 4: dead)
+
+       #self.stand = 0  -   # 평소에 stand = 1, 
+                            # 엎드리거나 stun 되어 누웠을때 stand = 0
+        self.stun_time = 0
+                            
         self.attack = False
-        self.attack_box = (0,0,0,0)
+        #self.attack_box = (0,0,0,0)
         self.ground_y = 128  # 바닥 위치 (y=0) 수정 필요
         self.move = 0
         self.flip = ' '
@@ -41,8 +48,6 @@ class Player(gfw.Sprite):
         self.hp = 4
         self.bomb = 4
         self.rope = 4
-
-        self.at = 0
 
         self.whip_x = 0
         self.whip_y = 0
@@ -66,10 +71,9 @@ class Player(gfw.Sprite):
         elif self.move == 1:
             self.image.clip_composite_draw(frame_move, 1920, 128, 128, 0, self.flip, *screen_pos, 128, 128)
 
+        # 공격박스 그리기 테스트
+        draw_rectangle(*self.get_draw_atk_bb())
         
-        #draw_rectangle(*self.attack_box)
-        #hw, hh = 32, 48  # 바운딩 박스 크기
-        #draw_rectangle(self.x - hw, self.y - hh - 10, self.x + hw, self.y + hh - 10)
     def update(self):
         self.time += gfw.frame_time
         self.time_atk += gfw.frame_time
@@ -89,7 +93,25 @@ class Player(gfw.Sprite):
             self.dy -= self.GRAVITY * gfw.frame_time
 
             #self.y -= self.GRAVITY
+            
+        # 죽음
+        if 0 >= self.hp:
+            self.state = 4
 
+        #마찰력 처리
+        if self.state == 3 or self.state == 4:
+            self.stun_time += gfw.frame_time
+            if self.state == 3 and self.stun_time >= 5:
+                self.state = 0
+                self.stun_time = 0
+            if 0.05 >= self.dx and self.dx >= -0.05:
+            #if self.dx == 0:
+                self.dx = 0
+            elif self.dx > 0:
+                self.dx -= self.FRICTION * gfw.frame_time
+            elif self.dx < 0:
+                self.dx += self.FRICTION * gfw.frame_time
+        
         # 착지 수정필요
         if self.y <= self.ground_y:
             self.y = self.ground_y  
@@ -97,7 +119,7 @@ class Player(gfw.Sprite):
         
         self.bg.show(self.x, self.y)
         
-        #test code here
+       
 
         # 방향(flip)
         if not self.attack:
@@ -106,17 +128,14 @@ class Player(gfw.Sprite):
             elif self.dx < 0:
                 self.flip = 'h'
         if self.attack == True:
-            self.at += 1
-            #print(self.at)
             if(self.frame_atk == 6 ): 
                 self.attack = False
 
                 self.frame_atk = 0
-                self.at = 0
+  
 
         self.attack_box = (self.x + 32, self.y - 10, self.x + 32 + 30, self.y + 10)
-        #print(self.x,", ",self.y)
-        #print(self.frame_atk)
+
         # 채찍xy
         sx, sy = self.bg.to_screen(self.x, self.y)
         if(self.attack == True):
@@ -141,10 +160,14 @@ class Player(gfw.Sprite):
                 elif(self.frame_atk > 3):
                     self.whip_x = sx - 64
                     self.whip_y = sy - 32
-        else:
-            self.whip_x = -999
-            self.whip_y = -999                   
-        print (self.whip_x,", ",self.whip_y)
+        #else:
+            #self.whip_x = -999
+            #self.whip_y = -999
+
+        #test code here
+        #print(self.x,", ",self.y)
+        #print(self.frame_atk)                   
+        #print (self.whip_x,", ",self.whip_y)
     def adjust_delta(self, x, y):
         self.dx += x
         self.dy += y
@@ -199,10 +222,41 @@ class Player(gfw.Sprite):
     def get_bb(self):
         hw, hh = 32, 48  # 바운딩 박스 크기
         return self.x - hw, self.y - hh - 10, self.x + hw, self.y + hh - 10
-
-    def attack_box(self):
-        def get_bb(self):
-            return self.x + hw, self.y - 10, self.x + hw + 30, self.y + 10
+    def get_atk_bb(self):
+        bw,bh = 48,32
+        fw,fh = 48,24
+        if self.attack == True:
+            if self.flip == ' ':
+                if 3 >= self.frame_atk:
+                    return self.x - bw - 64, self.y - bh + 32, self.x + bw - 64, self.y + bh + 32
+                elif self.frame_atk > 3:
+                    return self.x - fw + 64, self.y - fh - 24, self.x + fw + 64, self.y + fh - 24
+            else:
+                if 3 >= self.frame_atk:
+                    return self.x - bw + 64, self.y - bh + 32, self.x + bw + 64, self.y + bh + 32
+                elif self.frame_atk > 3:
+                    return self.x - fw - 64, self.y - fh - 24, self.x + fw - 64, self.y + fh - 24    
+        else: 
+            return 0,0,0,0
+    def get_draw_atk_bb(self):
+        bw,bh = 48,32
+        fw,fh = 48,24
+        sx, sy = self.bg.to_screen(self.x, self.y)
+        if self.attack == True:
+            if self.flip == ' ':
+                if 3 >= self.frame_atk:
+                    return sx - bw - 64, sy - bh + 32, sx + bw - 64, sy + bh + 32
+                elif self.frame_atk > 3:
+                    return sx - fw + 64, sy - fh - 24, sx + fw + 64, sy + fh - 24
+            else:
+                if 3 >= self.frame_atk:
+                    return sx - bw + 64, sy - bh + 32, sx + bw + 64, sy + bh + 32
+                elif self.frame_atk > 3:
+                    return sx - fw - 64, sy - fh - 24, sx + fw - 64, sy + fh - 24
+                return 0,0,0,0
+            #return self.x - hw - 32, self.y - hh, self.x + hw - 32, self.y + hh
+        else: 
+            return 0,0,0,0
 
     def __repr__(self):
         return 'Player'

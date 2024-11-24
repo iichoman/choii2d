@@ -81,3 +81,13 @@ def collides_box(a, b): # a or b is a Sprite
     if ta < bb: return False
 
     return True
+def collides_whip(whip, obj):
+    la, ba, ra, ta = whip
+    lb, bb, rb, tb = obj.get_bb()
+
+    if la > rb: return False
+    if ra < lb: return False
+    if ba > tb: return False
+    if ta < bb: return False
+
+    return True

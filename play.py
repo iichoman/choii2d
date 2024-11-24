@@ -1,9 +1,9 @@
 from pico2d import * 
 from gfw import *
 from player import Player
-from atk_box import Atk_box
+from monster import Monster
 
-world = World(['bg', 'player', 'atk_box'])
+world = World(['bg', 'player', 'monster'])
 
 canvas_width = 1024
 canvas_height = 768
@@ -13,7 +13,15 @@ shows_bounding_box = True
 shows_object_count = True
 
 def enter():
-    global bg, player, atk_box
+    global bg, player
+
+    loaded = world.load(' ')
+    print(f'{loaded=} world object count={world.count()}')
+    if loaded: # world.count() > 0:
+        player = list(world.objects_at(world.layer.player))[0]
+        bg = player.bg
+        world.bg = bg
+        return
 
     #bg = ScrollBackground('res/maps/bg_cave.png')
     bg = ScrollBackground('res/maps/ttt.png')
@@ -25,9 +33,9 @@ def enter():
     player.bg = bg
     world.append(player, world.layer.player)
 
-    atk_box = Atk_box()
-    atk_box.bg = bg 
-    world.append(atk_box, world.layer.atk_box)
+    monster = Monster()
+    monster.bg = bg
+    world.append(monster, world.layer.monster)
     # test
     
 def exit():

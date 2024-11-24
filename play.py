@@ -9,7 +9,7 @@ canvas_width = 1024
 canvas_height = 768
 #canvas_width = 1280
 #canvas_height = 960
-shows_bounding_box = False
+shows_bounding_box = True
 shows_object_count = True
 
 def enter():

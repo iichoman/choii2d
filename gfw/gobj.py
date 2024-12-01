@@ -337,10 +337,10 @@ class MapBackground(ScrollBackground):
 
                         tl, tb, tr, tt = round(left + self.x), round(dst_top - self.tilesize + self.y), round(left + self.tilesize + self.x), round(dst_top + self.y)
                         tile_bb = tl, tb, tr, tt
-                        l_bb = tl, tb+7, tl, tt-7
-                        b_bb = tl+10, tb, tr-10, tb
-                        r_bb = tr, tb+7, tr, tt-7
-                        t_bb = tl+10, tt, tr-10, tt
+                        l_bb = tl, tb+15, tl, tt-15
+                        b_bb = tl+15, tb, tr-15, tb
+                        r_bb = tr, tb+15, tr, tt-15
+                        t_bb = tl+15, tt, tr-15, tt
 
                         pl, pb, pr, pt = player.get_bb()
                         rpl, rpb, rpr, rpt = round(pl), round(pb), round(pr), round(pt)

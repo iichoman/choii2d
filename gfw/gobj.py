@@ -375,26 +375,31 @@ class MapBackground(ScrollBackground):
                                 #print("???")
                                 #print(gfw.frame_time)
                                 #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
-                        elif bcollides:
-                            player.dy = 0 
-                            if rpt > tb:
-                                    player.y += tb-rpt - 1
+                        
                         elif rcollides:
-                            
+                            player.dx = 0
+                            player.dxl = 0
                             if rpb < tt:
                                 print("rc")
-                                player.dx = 0
                                 if rpl < tr:
-                                    player.x += tr - rpl + 1
+                                    player.x += tr - rpl 
+                            #player.Lblock = True
 
                         elif lcollides:
-                            
+                            player.dx = 0
+                            player.dxr = 0
                             if rpb < tt:
                                 
                                 player.dx = 0
                                 if rpr > tl:
                                     print("lc")
                                     player.x -=  rpr - tl + 1
+                        elif bcollides:
+                            player.dy = 0 
+                            if rpt > tb:
+                                    player.y -= rpt - tb + 1            
+
+
                         
 
                     left += self.tilesize  # 다음 타일을 그릴 위치로 이동
@@ -409,7 +414,7 @@ class MapBackground(ScrollBackground):
                     if not self.wraps:  # wraps가 False이면 반복하지 않음
                         break
                     ty -= layer.height  # wraps가 True이면 다시 첫 번째 줄로 돌아감
-   
+    
     def collides_tile(self):
         pass
                     

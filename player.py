@@ -35,7 +35,8 @@ class Player(gfw.Sprite):
         self.dx, self.dy = 0, 0  # x, y 방향 속도
         self.dxl, self.dxr = 0,0
         self.speed = 500  # 기본 이동 속도
-
+        self.Lblock = False
+        self.Rblock = False
         self.state = 0  # (0: 기본, 1: 점프, 2: 피해, 3: 스턴, 4: dead)
 
        #self.stand = 0  -   # 평소에 stand = 1, 
@@ -102,6 +103,7 @@ class Player(gfw.Sprite):
         if self.attack == True:
             self.frame_atk = round(self.time_atk * fps*1.5) % 7
         self.dx = self.dxl + self.dxr
+        
         self.x += self.dx * self.speed * gfw.frame_time 
         self.y += self.dy * self.speed * gfw.frame_time
 
@@ -199,13 +201,13 @@ class Player(gfw.Sprite):
         if e.type == SDL_KEYDOWN:
             
             if e.key == SDLK_LEFT:
-                #self.adjust_delta(-1.5, 0)
-                self.dxl = -1.5
-                self.move = 1
+                if not self.Lblock:
+                    self.dxl = -1.5
+                    self.move = 1
             elif e.key == SDLK_RIGHT: 
-                #self.adjust_delta(1.5, 0)
-                self.dxr = 1.5
-                self.move = 1
+                if not self.Rblock:
+                    self.dxr = 1.5
+                    self.move = 1
         
             elif e.key == SDLK_LSHIFT:
                 self.speed = 300

@@ -33,12 +33,14 @@ class Player(gfw.Sprite):
         self.frame_atk = 0
         self.frame_jump = 0
         self.dx, self.dy = 0, 0  # x, y 방향 속도
-        self.dxl, self.dxr = 0,0
+
         self.speed = 500  # 기본 이동 속도
         self.Lblock = False
         self.Rblock = False
         self.state = 0  # (0: 기본, 1: 점프, 2: 피해, 3: 스턴, 4: dead)
 
+        self.LeftToggles = False
+        self.RightToggles = False
        #self.stand = 0  -   # 평소에 stand = 1, 
                             # 엎드리거나 stun 되어 누웠을때 stand = 0
         self.stun_time = 0
@@ -86,7 +88,8 @@ class Player(gfw.Sprite):
         draw_rectangle(*self.get_draw_atk_bb())
         
     def update(self):
-        print(self.state)
+        
+        #print(self.state)
         if self.dy == 0 and self.dx == 0:
             self.move = 0
         else:
@@ -100,9 +103,16 @@ class Player(gfw.Sprite):
         self.frame_move = round(self.time_move * fps*2) % 8
 
         self.frame_jump = round(self.time_jump * fps) % 8
+
         if self.attack == True:
             self.frame_atk = round(self.time_atk * fps*1.5) % 7
-        self.dx = self.dxl + self.dxr
+        self.dx = 0
+
+        if self.RightToggles:
+            self.dx = 1.5
+        if self.LeftToggles:
+            self.dx = -1.5
+        
         
         self.x += self.dx * self.speed * gfw.frame_time 
         self.y += self.dy * self.speed * gfw.frame_time
@@ -201,14 +211,9 @@ class Player(gfw.Sprite):
         if e.type == SDL_KEYDOWN:
             
             if e.key == SDLK_LEFT:
-                if not self.Lblock:
-                    self.dxl = -1.5
-                    self.move = 1
+                self.LeftToggles = True
             elif e.key == SDLK_RIGHT: 
-                if not self.Rblock:
-                    self.dxr = 1.5
-                    self.move = 1
-        
+                self.RightToggles = True
             elif e.key == SDLK_LSHIFT:
                 self.speed = 300
             elif e.key == SDLK_z:  
@@ -222,10 +227,10 @@ class Player(gfw.Sprite):
 
         elif e.type == SDL_KEYUP:
             if e.key == SDLK_LEFT:   
-                self.dxl = 0
+                self.LeftToggles = False
 
             elif e.key == SDLK_RIGHT: 
-                self.dxr = 0
+                self.RightToggles = False
                 
 
             elif e.key == SDLK_LSHIFT:

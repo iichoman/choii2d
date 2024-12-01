@@ -252,6 +252,7 @@ class MapBackground(ScrollBackground):
         hw, hh = get_canvas_width() // 2, get_canvas_height() // 2
         self.x = clamp(-500, x - hw, self.max_scroll_x)
         self.y = clamp(-9999, y - hh, self.max_scroll_y)
+    
     def draw(self):
         """맵을 그리는 함수. 모든 레이어를 순차적으로 그립니다."""
         cw, ch = get_canvas_width(), get_canvas_height()  # 화면 크기
@@ -376,28 +377,31 @@ class MapBackground(ScrollBackground):
                                 #print(gfw.frame_time)
                                 #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
                         
-                        elif rcollides:
+                        if rcollides:
                             player.dx = 0
-                            player.dxl = 0
+                            
                             if rpb < tt:
-                                print("rc")
-                                if rpl < tr:
-                                    player.x += tr - rpl 
-                            #player.Lblock = True
 
-                        elif lcollides:
+                                if rpl < tr:
+                                    player.x += tr - rpl + 10
+                            
+                        else:
+                            player.Lblock = False
+
+                        if lcollides:
                             player.dx = 0
-                            player.dxr = 0
+                            
                             if rpb < tt:
-                                
-                                player.dx = 0
+
                                 if rpr > tl:
-                                    print("lc")
                                     player.x -=  rpr - tl + 1
-                        elif bcollides:
+                            
+                        else: 
+                            player.Rblock = False
+                        if bcollides:
                             player.dy = 0 
                             if rpt > tb:
-                                    player.y -= rpt - tb + 1            
+                                    player.y -= rpt - tb          
 
 
                         

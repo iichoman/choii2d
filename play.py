@@ -10,10 +10,10 @@ from monster import Monster
 
 world = World(['bg', 'player', 'monster'])
 
-canvas_width = 1920
-canvas_height = 1080
-#canvas_width = 1280
-#canvas_height = 960
+#canvas_width = 800
+#canvas_height = 600
+canvas_width = 1280
+canvas_height = 960
 shows_bounding_box = True
 shows_object_count = True
 
@@ -27,8 +27,8 @@ def enter():
         bg = player.bg
         world.bg = bg
         return
-    
-    bg = gfw.MapBackground('res/earth3.json', fitsWidth=True, fitsHeight=True)
+    #bg = gfw.MapBackground2('res/desert.tmj', fitsWidth=False, fitsHeight=False)
+    bg = gfw.MapBackground('res/cave1-1.json', fitsWidth=False, fitsHeight=False)
     #bg = ScrollBackground('res/maps/ttt.png')
     
     world.append(bg, world.layer.bg)

@@ -199,7 +199,7 @@ def _get_folder(filename):
     return '.' if idx < 0 else filename[:idx]
 
 class MapBackground(ScrollBackground):
-    def __init__(self, filename, tilesize=96, wraps=False, fitsWidth=False, fitsHeight=False, dx=0, dy=0):
+    def __init__(self, filename, tilesize=108, wraps=False, fitsWidth=False, fitsHeight=False, dx=0, dy=0):
         super().__init__(None)
         self.filename = filename
         self.folder = _get_folder(filename)  # 파일 경로에서 폴더명 추출
@@ -236,37 +236,28 @@ class MapBackground(ScrollBackground):
         self.max_scroll_x = self.tmap.width * self.tilesize
         self.max_scroll_y = self.tmap.height * self.tilesize
 
-    def scroll(self, dx, dy):
-        """스크롤을 dx, dy 만큼 이동시키는 함수"""
-        self.scrollTo(self.x + dx, self.y + dy)
-
-    def scrollTo(self, x, y):
-        """스크롤 위치를 (x, y)로 이동시키는 함수. 스크롤 한계를 벗어나지 않도록 제한."""
-        self.x = clamp(0, x, self.max_scroll_x)  # x 좌표를 제한
-        self.y = clamp(0, y, self.max_scroll_y)  # y 좌표를 제한
-
-    def show(self, x, y):
-        """스크롤 위치를 화면 중앙에 맞추는 함수"""
-        hw, hh = get_canvas_width() // 2, get_canvas_height() // 2  # 화면의 가로, 세로 절반 크기
-        self.x = clamp(0, x - hw, self.max_scroll_x)  # x 위치를 중앙으로 맞춤
-        self.y = clamp(0, y - hh, self.max_scroll_y)  # y 위치를 중앙으로 맞춤
-
     def set_scroll_speed(self, dx, dy):
         """스크롤 속도를 설정하는 함수"""
         self.scroll_dx, self.scroll_dy = dx, dy
-
+    def total_width(self):
+        return self.tmap.width * self.tilesize
+    def total_height(self):
+        return self.tmap.height  * self.tilesize
     def update(self):
         """스크롤 속도에 맞게 스크롤 위치를 업데이트하는 함수"""
         self.x += gfw.frame_time * self.scroll_dx  # 프레임 시간에 따른 스크롤 업데이트
         self.y += gfw.frame_time * self.scroll_dy  # 프레임 시간에 따른 스크롤 업데이트
         #self.check_player_landing()
-
+    def show(self, x, y):
+        hw, hh = get_canvas_width() // 2, get_canvas_height() // 2
+        self.x = clamp(-500, x - hw, self.max_scroll_x)
+        self.y = clamp(-9999, y - hh, self.max_scroll_y)
     def draw(self):
         """맵을 그리는 함수. 모든 레이어를 순차적으로 그립니다."""
         cw, ch = get_canvas_width(), get_canvas_height()  # 화면 크기
 
         # 현재 스크롤 위치에 맞춰 시작 좌표를 계산
-        sx, sy = round(self.x), round(self.y)
+        sx, sy = round(self.x), -round(self.y)
 
         # 맵이 반복되는 경우 (wraps가 True인 경우) 스크롤 위치가 맵의 끝을 넘어가면 다시 처음으로 돌아가도록 처리
         if self.wraps:
@@ -290,6 +281,7 @@ class MapBackground(ScrollBackground):
         # 모든 레이어를 그리기 위한 반복문
         player = gfw.top().player
         for layer in self.layers:
+            #layer = self.layers[]
             dst_left, dst_top = beg_x, ch - beg_y  # 타일을 그릴 위치 설정
             ty = tile_y  # 타일 y 좌표 초기화
             while dst_top > 0:
@@ -297,7 +289,19 @@ class MapBackground(ScrollBackground):
                 left = dst_left
                 while left < cw:
                     t_index = ty * layer.width + tx  # 현재 타일의 인덱스를 계산
+                    
+                    if t_index >= len(layer.data):
+                        t_index = 1
+                    #print(t_index)
+                        
+                    #t_index = 600  # 현재 타일의 인덱스를 계산
+                    #print(layer.name,t_index)
                     tile = layer.data[t_index]  # 해당 타일 번호를 가져옴
+
+                    #print(layer.name, len(layer.data))
+                    
+
+                    
                     if tile == 0:  # 타일이 0이면 빈 타일이므로 스킵
                         tx += 1
                         left += self.tilesize
@@ -330,16 +334,68 @@ class MapBackground(ScrollBackground):
                     if layer.name == 'terrain':
                         # 타일 위치를 (left, dst_top)에서 시작
                         # 타일 크기는 self.tilesize
-                        gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)  # 빨간색으로 바운딩 박스 그리기
-                        t_bb = left, dst_top - self.tilesize, left + self.tilesize, dst_top
-                        collides = gfw.collides_whip(t_bb, player)
-                        if collides:
+
+                        tl, tb, tr, tt = round(left + self.x), round(dst_top - self.tilesize + self.y), round(left + self.tilesize + self.x), round(dst_top + self.y)
+                        tile_bb = tl, tb, tr, tt
+                        l_bb = tl, tb+7, tl, tt-7
+                        b_bb = tl+10, tb, tr-10, tb
+                        r_bb = tr, tb+7, tr, tt-7
+                        t_bb = tl+10, tt, tr-10, tt
+
+                        pl, pb, pr, pt = player.get_bb()
+                        rpl, rpb, rpr, rpt = round(pl), round(pb), round(pr), round(pt)
+                        p_bb = rpl, rpb, rpr, rpt
+
+                        collides = gfw.collides_bb(tile_bb, p_bb)
+                        lcollides = gfw.collides_bb(l_bb, p_bb)
+                        bcollides = gfw.collides_bb(b_bb, p_bb)
+                        rcollides = gfw.collides_bb(r_bb, p_bb)
+                        tcollides = gfw.collides_bb(t_bb, p_bb)
+                      
+                        #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
+                        
+                        #gfw.draw_rectangle(*tile_bb)
+                        gfw.draw_rectangle(*l_bb)
+                        gfw.draw_rectangle(*b_bb)
+                        gfw.draw_rectangle(*r_bb)
+                        gfw.draw_rectangle(*t_bb)
+
+                        gfw.draw_rectangle(*p_bb)
+                        
+                        if tcollides:
                             #if player.state == 1:
-                                player.y = dst_top+58
+
                                 player.dy = 0
+                                if rpb < tt:
+                                    
+                                    player.y += tt-rpb
+                                #player.y = dst_top + self.y + 58 
+                                
                                 player.state = 0
+                                #print("???")
+                                #print(gfw.frame_time)
+                                #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
+                        elif bcollides:
+                            player.dy = 0 
+                            if rpt > tb:
+                                    player.y += tb-rpt - 1
+                        elif rcollides:
+                            
+                            if rpb < tt:
+                                print("rc")
+                                player.dx = 0
+                                if rpl < tr:
+                                    player.x += tr - rpl + 1
 
-
+                        elif lcollides:
+                            
+                            if rpb < tt:
+                                
+                                player.dx = 0
+                                if rpr > tl:
+                                    print("lc")
+                                    player.x -=  rpr - tl + 1
+                        
 
                     left += self.tilesize  # 다음 타일을 그릴 위치로 이동
                     tx += 1
@@ -353,28 +409,9 @@ class MapBackground(ScrollBackground):
                     if not self.wraps:  # wraps가 False이면 반복하지 않음
                         break
                     ty -= layer.height  # wraps가 True이면 다시 첫 번째 줄로 돌아감
+   
+    def collides_tile(self):
+        pass
+                    
 
-        # 바운딩 박스 그리기
 
-    def to_screen(self, x, y):
-        return x - self.x, y - self.y
-
-    def from_screen(self, x, y):
-        return x + self.x, y + self.y
-
-    def get_bb(self):
-        return 0, 0, 0, 0
-    def check_player_landing(self):
-        player = gfw.top().player  # 플레이어 객체
-
-        # 플레이어의 Bounding Box (BB) 구하기
-        pl, pb, pr, pt = player.get_bb()
-
-        for layer in self.layers:
-            if layer.name == 'terrain':
-                pass
-                    # 타일 위치를 (left, dst_top)에서 시작
-                    # 타일 크기는 self.tilesize
-                    #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)  # 빨간색으로 바운딩 박스 그리기 
-
-        

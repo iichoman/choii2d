@@ -24,7 +24,7 @@ class Player(gfw.Sprite):
     MAX_JUMP_POWER = 3
 
     def __init__(self):
-        super().__init__('res/char/char.png', 300, 300)
+        super().__init__('res/char/char.png', 300, 500)
         self.time_move = 0  # 시간 (초 단위)
         self.time_atk = 0
         self.time_jump = 0
@@ -34,7 +34,7 @@ class Player(gfw.Sprite):
         self.frame_jump = 0
         self.dx, self.dy = 0, 0  # x, y 방향 속도
         self.speed = 500  # 기본 이동 속도
-        
+
         self.state = 0  # (0: 기본, 1: 점프, 2: 피해, 3: 스턴, 4: dead)
 
        #self.stand = 0  -   # 평소에 stand = 1, 
@@ -59,7 +59,7 @@ class Player(gfw.Sprite):
         self.whip_x = 0
         self.whip_y = 0
 
-
+        self.stop = False
     def draw(self):
         frame_move = self.frame_move * 128 + 128
         frame_jump = self.frame_jump * 128
@@ -84,6 +84,7 @@ class Player(gfw.Sprite):
         draw_rectangle(*self.get_draw_atk_bb())
         
     def update(self):
+
         self.time_move += gfw.frame_time
         self.time_jump += gfw.frame_time
         self.time_atk += gfw.frame_time
@@ -100,13 +101,14 @@ class Player(gfw.Sprite):
         self.y += self.dy * self.speed * gfw.frame_time
 
         # 중력 처리  
+        #if self.state != 0:
         self.dy -= self.GRAVITY * gfw.frame_time
 
         if self.dy != 0:
             self.state = 1
             
      
-        print(self.frame_jump)
+        #print(self.frame_jump)
 
         # 죽음
         if 0 >= self.hp:
@@ -127,9 +129,9 @@ class Player(gfw.Sprite):
                 self.dx += self.FRICTION * gfw.frame_time
         
         # 착지 수정필요
-        if self.y <= self.ground_y:
-            self.y = self.ground_y  
-            self.state = 0  
+        #if self.y <= self.ground_y:
+            #self.y = self.ground_y  
+            #self.state = 0  
         
         self.bg.show(self.x, self.y)
         
@@ -183,7 +185,8 @@ class Player(gfw.Sprite):
         #print(self.frame_atk)                   
         #print (self.whip_x,", ",self.whip_y)
     def adjust_delta(self, x, y):
-        self.dx += x
+        if not self.stop:
+            self.dx += x
         self.dy += y
         if self.dx == 0:
             self.move = 0
@@ -198,6 +201,12 @@ class Player(gfw.Sprite):
             elif e.key == SDLK_RIGHT: 
                 self.adjust_delta(1.5, 0)
                 self.move = 1
+            elif e.key == SDLK_UP: 
+                self.adjust_delta(0, 1)
+                self.move = 1
+            elif e.key == SDLK_DOWN: 
+                self.adjust_delta(0, -1)
+                self.move = 1
             elif e.key == SDLK_LSHIFT:
                 self.speed = 300
             elif e.key == SDLK_z:  
@@ -210,14 +219,20 @@ class Player(gfw.Sprite):
                     self.attack = True
 
         elif e.type == SDL_KEYUP:
-            if e.key == SDLK_LEFT:    
-                self.adjust_delta(1.5, 0)
+            if e.key == SDLK_LEFT:   
+                if self.dx != 0: 
+                    self.adjust_delta(1.5, 0)
                
-                
             elif e.key == SDLK_RIGHT: 
-                self.adjust_delta(-1.5, 0)
+                if self.dx != 0:
+                    self.adjust_delta(-1.5, 0)
                 
-                
+            elif e.key == SDLK_UP: 
+                self.adjust_delta(0, -1)
+                self.move = 1
+            elif e.key == SDLK_DOWN: 
+                self.adjust_delta(0, 1)
+                self.move = 1
             elif e.key == SDLK_LSHIFT:
                 self.speed = 500
 

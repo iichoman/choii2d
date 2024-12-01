@@ -91,3 +91,13 @@ def collides_whip(whip, obj):
     if ta < bb: return False
 
     return True
+def collides_bb(b1, b2):
+    la, ba, ra, ta = b1
+    lb, bb, rb, tb = b2
+
+    if la > rb: return False
+    if ra < lb: return False
+    if ba > tb: return False
+    if ta < bb: return False
+
+    return True

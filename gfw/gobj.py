@@ -3,6 +3,7 @@ from pico2d import *
 import gfw
 from . import tiledmap
 
+
 class Gauge:
     def __init__(self, fg_fname, bg_fname):
         self.fg = gfw.image.load(fg_fname)
@@ -248,12 +249,17 @@ class MapBackground(ScrollBackground):
         self.x += gfw.frame_time * self.scroll_dx  # 프레임 시간에 따른 스크롤 업데이트
         self.y += gfw.frame_time * self.scroll_dy  # 프레임 시간에 따른 스크롤 업데이트
         #self.check_player_landing()
+        #self.test()
+
     def show(self, x, y):
         hw, hh = get_canvas_width() // 2, get_canvas_height() // 2
         self.x = clamp(-500, x - hw, self.max_scroll_x)
         self.y = clamp(-9999, y - hh, self.max_scroll_y)
     
     def draw(self):
+        LC, RC = 0, 0
+        UC, DC = 0, 0
+        Bubble_C = 0 
         """맵을 그리는 함수. 모든 레이어를 순차적으로 그립니다."""
         cw, ch = get_canvas_width(), get_canvas_height()  # 화면 크기
 
@@ -280,7 +286,208 @@ class MapBackground(ScrollBackground):
         beg_y = -(sy % self.tilesize)
 
         # 모든 레이어를 그리기 위한 반복문
-        player = gfw.top().player
+        
+        for layer in self.layers:
+            #layer = self.layers[]
+            dst_left, dst_top = beg_x, ch - beg_y  # 타일을 그릴 위치 설정
+            ty = tile_y  # 타일 y 좌표 초기화
+            while dst_top > 0:
+                tx = tile_x  # 타일 x 좌표 초기화
+                left = dst_left
+                while left < cw:
+                    t_index = ty * layer.width + tx  # 현재 타일의 인덱스를 계산
+                    
+                    if t_index >= len(layer.data):
+                        t_index = 1
+                    #print(t_index)
+                        
+                    #t_index = 600  # 현재 타일의 인덱스를 계산
+                    #print(layer.name,t_index)
+                    tile = layer.data[t_index]  # 해당 타일 번호를 가져옴
+
+                    #print(layer.name, len(layer.data))
+                    
+
+                    
+                    if tile == 0:  # 타일이 0이면 빈 타일이므로 스킵
+                        tx += 1
+                        left += self.tilesize
+                        continue
+                
+                    # 모든 타일셋을 순차적으로 검색
+                    world = gfw.top().world
+                    
+                    for ts in self.tmap.tilesets:
+                        ts.rows = math.ceil(ts.tilecount / ts.columns)
+
+                        # 해당 타일셋에서 타일 번호를 찾기
+                        if tile >= ts.firstgid and tile < ts.firstgid + ts.tilecount:
+                            if ts.tile_image is None:
+                                print(f"Skipping tile {tile} due to missing tileset image.")
+                                continue  # 이미지가 없는 경우 해당 타일을 건너뜀
+
+                            sx = (tile - ts.firstgid) % ts.columns  # 타일셋에서의 x 좌표
+                            sy = (tile - ts.firstgid) // ts.columns  # 타일셋에서의 y 좌표
+                            src_left = ts.margin + sx * (ts.tilewidth + ts.spacing)  # 타일 이미지의 좌측 위치
+                            src_botm = ts.margin + (ts.rows - sy - 1) * (ts.tileheight + ts.spacing)  # 타일 이미지의 하단 위치
+
+                            dst_botm = dst_top - self.tilesize  # 화면 상의 타일 하단 위치
+                            # 타일 그리기 (타일셋 이미지에서 해당 타일을 잘라서 화면에 그리기)
+
+                            if layer.name == 'bubble':
+                                             
+
+                                # bubble의 초기위치 -999,-999
+                                # bubble이 살아있고 bubble 타일을 찾으면 bubble의 위치를 타일 위치로 옮긴다.
+                                # 몬스터도 같은방식으로 생성해볼까
+                                # 몬스터는 죽어있는채로 생성(플레이어 감지가 작동하지 않도록)
+                                # 몬스터와 플레이어 사이에 벽이 있으면 감지할 수 없어야 하는데.....
+                                # 거리 비교해서 감지 거리를 갱신하기로 하자 
+                                pass
+                            else:
+                                ts.tile_image.clip_draw_to_origin(
+                                    src_left, src_botm, ts.tilewidth, ts.tileheight,
+                                    left, dst_botm, self.tilesize, self.tilesize
+                                )
+                            break  # 타일셋을 찾으면 더 이상 검색하지 않음
+                    #print(layer.name)
+                    #if tile != 0 :  # 빈 타일이 아니면
+                    if layer.name == 'bubble':
+                                bubbles = world.objects_at(world.layer.bubble)
+                                
+                                for bubble in bubbles:
+
+                                    if bubble.act == 1:
+                                        bubble.cnt += 1
+                                        print ("")
+                                        bubble.x = left
+                                        bubble.y = dst_top
+                                        bubble.act = 0
+                                        break
+                    player = gfw.top().player
+                    if layer.name == 'terrain':
+                        
+                        
+                        # 타일 위치를 (left, dst_top)에서 시작
+                        # 타일 크기는 self.tilesize
+
+                        tl, tb, tr, tt = round(left + self.x), round(dst_top - self.tilesize + self.y), round(left + self.tilesize + self.x), round(dst_top + self.y)
+                        tile_bb = tl, tb, tr, tt
+                        l_bb = tl, tb+5, tl, tt-5
+                        b_bb = tl+5, tb, tr-5, tb
+                        r_bb = tr, tb+5, tr, tt-5
+                        t_bb = tl+5, tt, tr-5, tt
+
+                        pl, pb, pr, pt = player.get_bb()
+                        rpl, rpb, rpr, rpt = round(pl), round(pb), round(pr), round(pt)
+                        p_bb = rpl, rpb, rpr, rpt
+
+                        collides = gfw.collides_bb(tile_bb, p_bb)
+                        lcollides = gfw.collides_bb(l_bb, p_bb)
+                        bcollides = gfw.collides_bb(b_bb, p_bb)
+                        rcollides = gfw.collides_bb(r_bb, p_bb)
+                        tcollides = gfw.collides_bb(t_bb, p_bb)
+                      
+                        #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
+                        
+                        #gfw.draw_rectangle(*tile_bb)
+                        gfw.draw_rectangle(*l_bb)
+                        gfw.draw_rectangle(*b_bb)
+                        gfw.draw_rectangle(*r_bb)
+                        gfw.draw_rectangle(*t_bb)
+
+                        gfw.draw_rectangle(*p_bb)
+                        
+                        if tcollides:
+                            #if player.state == 1:
+                                player.Dblock = True
+                                DC += 1
+                                player.dy = 0
+                                if rpb < tt :
+                                    
+                                    player.y += tt-rpb
+                                #player.y = dst_top + self.y + 58 
+                                
+                                player.state = 0
+                                #print("???")
+                                #print(gfw.frame_time)
+                                #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
+                        
+                        elif rcollides:
+                            player.dx = 0
+                            LC += 1
+                            player.Lblock = True
+                            if rpb < tt:
+
+                                if rpl < tr:
+                                    player.x += tr - rpl
+
+                        elif lcollides:
+                            player.dx = 0
+                            RC += 1
+                            player.Rblock = True
+                            if rpb < tt:
+
+                                if rpr > tl :
+                                    player.x -=  rpr - tl
+                            
+                        elif bcollides:
+                            player.dy = 0 
+                            if rpt > tb:
+                                    player.y -= rpt - tb + 1       
+
+
+                        
+
+                    left += self.tilesize  # 다음 타일을 그릴 위치로 이동
+                    tx += 1
+                    if tx >= layer.width:  # 한 줄을 다 그리면
+                        if not self.wraps:  # wraps가 False이면 반복하지 않음
+                            break
+                        tx -= layer.width  # wraps가 True이면 다음 줄의 첫 번째 타일로 이동
+                dst_top -= self.tilesize  # 화면 상의 y 좌표를 한 칸 아래로 이동
+                ty += 1
+                if ty >= layer.height:  # 모든 타일을 다 그렸으면
+                    if not self.wraps:  # wraps가 False이면 반복하지 않음
+                        break
+                    ty -= layer.height  # wraps가 True이면 다시 첫 번째 줄로 돌아감
+        #print(player.Lblock)
+        if RC == 0:
+            player.Rblock = False
+        if LC == 0:
+            player.Lblock = False
+        if DC == 0:
+            player.Dblock = False
+    def test(self):
+        LC, RC = 0, 0
+        UC, DC = 0, 0
+        """맵을 그리는 함수. 모든 레이어를 순차적으로 그립니다."""
+        cw, ch = get_canvas_width(), get_canvas_height()  # 화면 크기
+
+        # 현재 스크롤 위치에 맞춰 시작 좌표를 계산
+        sx, sy = round(self.x), -round(self.y)
+
+        # 맵이 반복되는 경우 (wraps가 True인 경우) 스크롤 위치가 맵의 끝을 넘어가면 다시 처음으로 돌아가도록 처리
+        if self.wraps:
+            map_total_width = self.tmap.width * self.tilesize
+            map_total_height = self.tmap.height * self.tilesize
+            sx %= map_total_width
+            if sx < 0:
+                sx += map_total_width
+            sy %= map_total_height
+            if sy < 0:
+                sy += map_total_width
+
+        # 그릴 타일의 시작 위치 (타일 기준)
+        tile_x = sx // self.tilesize  # 시작 타일의 x 좌표
+        tile_y = sy // self.tilesize  # 시작 타일의 y 좌표
+
+        # 화면 상에 그려질 타일의 좌측 상단 위치를 계산
+        beg_x = -(sx % self.tilesize)
+        beg_y = -(sy % self.tilesize)
+
+        # 모든 레이어를 그리기 위한 반복문
+        
         for layer in self.layers:
             #layer = self.layers[]
             dst_left, dst_top = beg_x, ch - beg_y  # 타일을 그릴 위치 설정
@@ -325,23 +532,23 @@ class MapBackground(ScrollBackground):
 
                             dst_botm = dst_top - self.tilesize  # 화면 상의 타일 하단 위치
                             # 타일 그리기 (타일셋 이미지에서 해당 타일을 잘라서 화면에 그리기)
-                            ts.tile_image.clip_draw_to_origin(
-                                src_left, src_botm, ts.tilewidth, ts.tileheight,
-                                left, dst_botm, self.tilesize, self.tilesize
-                            )
+
                             break  # 타일셋을 찾으면 더 이상 검색하지 않음
                     #print(layer.name)
                     #if tile != 0 :  # 빈 타일이 아니면
+                    player = gfw.top().player
                     if layer.name == 'terrain':
+                        
+                        
                         # 타일 위치를 (left, dst_top)에서 시작
                         # 타일 크기는 self.tilesize
 
                         tl, tb, tr, tt = round(left + self.x), round(dst_top - self.tilesize + self.y), round(left + self.tilesize + self.x), round(dst_top + self.y)
                         tile_bb = tl, tb, tr, tt
-                        l_bb = tl, tb+15, tl, tt-15
-                        b_bb = tl+15, tb, tr-15, tb
-                        r_bb = tr, tb+15, tr, tt-15
-                        t_bb = tl+15, tt, tr-15, tt
+                        l_bb = tl, tb+5, tl, tt-5
+                        b_bb = tl+5, tb, tr-5, tb
+                        r_bb = tr, tb+5, tr, tt-5
+                        t_bb = tl+5, tt, tr-5, tt
 
                         pl, pb, pr, pt = player.get_bb()
                         rpl, rpb, rpr, rpt = round(pl), round(pb), round(pr), round(pt)
@@ -365,9 +572,10 @@ class MapBackground(ScrollBackground):
                         
                         if tcollides:
                             #if player.state == 1:
-
+                                player.Dblock = True
+                                DC += 1
                                 player.dy = 0
-                                if rpb < tt:
+                                if rpb < tt :
                                     
                                     player.y += tt-rpb
                                 #player.y = dst_top + self.y + 58 
@@ -377,31 +585,28 @@ class MapBackground(ScrollBackground):
                                 #print(gfw.frame_time)
                                 #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
                         
-                        if rcollides:
+                        elif rcollides:
                             player.dx = 0
-                            
+                            LC += 1
+                            player.Lblock = True
                             if rpb < tt:
 
                                 if rpl < tr:
-                                    player.x += tr - rpl + 10
-                            
-                        else:
-                            player.Lblock = False
+                                    player.x += tr - rpl
 
-                        if lcollides:
+                        elif lcollides:
                             player.dx = 0
-                            
+                            RC += 1
+                            player.Rblock = True
                             if rpb < tt:
 
-                                if rpr > tl:
-                                    player.x -=  rpr - tl + 1
+                                if rpr > tl :
+                                    player.x -=  rpr - tl
                             
-                        else: 
-                            player.Rblock = False
-                        if bcollides:
+                        elif bcollides:
                             player.dy = 0 
                             if rpt > tb:
-                                    player.y -= rpt - tb          
+                                    player.y -= rpt - tb + 1       
 
 
                         
@@ -418,9 +623,13 @@ class MapBackground(ScrollBackground):
                     if not self.wraps:  # wraps가 False이면 반복하지 않음
                         break
                     ty -= layer.height  # wraps가 True이면 다시 첫 번째 줄로 돌아감
-    
-    def collides_tile(self):
-        pass
+        #print(player.Lblock)
+        if RC == 0:
+            player.Rblock = False
+        if LC == 0:
+            player.Lblock = False
+        if DC == 0:
+            player.Dblock = False
                     
 
 

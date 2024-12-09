@@ -24,7 +24,7 @@ class Player(gfw.Sprite):
     MAX_JUMP_POWER = 3
 
     def __init__(self):
-        super().__init__('res/char/char.png', 300, 500)
+        super().__init__('res/char/char.png', 300, 300)
         self.time_move = 0  # 시간 (초 단위)
         self.time_atk = 0
         self.time_jump = 0
@@ -33,10 +33,11 @@ class Player(gfw.Sprite):
         self.frame_atk = 0
         self.frame_jump = 0
         self.dx, self.dy = 0, 0  # x, y 방향 속도
-
         self.speed = 500  # 기본 이동 속도
         self.Lblock = False
         self.Rblock = False
+        self.Ublock = False
+        self.Dblock = False
         self.state = 0  # (0: 기본, 1: 점프, 2: 피해, 3: 스턴, 4: dead)
 
         self.LeftToggles = False
@@ -71,8 +72,10 @@ class Player(gfw.Sprite):
         #move = self.move
         
         screen_pos = self.bg.to_screen(self.x, self.y)
+        if self.hp <= 0:
+            pass
 
-        if self.attack == True:
+        elif self.attack == True:
             # 채찍 그리기
             self.image.clip_composite_draw(frame_atk + 1280, 384, 128, 128, 0, self.flip, self.whip_x, self.whip_y, 96, 96)
             # 공격 모션
@@ -108,18 +111,21 @@ class Player(gfw.Sprite):
             self.frame_atk = round(self.time_atk * fps*1.5) % 7
         self.dx = 0
 
-        if self.RightToggles:
+        if self.RightToggles and not self.Rblock:
             self.dx = 1.5
-        if self.LeftToggles:
+        if self.LeftToggles and not self.Lblock:
             self.dx = -1.5
-        
-        
-        self.x += self.dx * self.speed * gfw.frame_time 
+         
+        if not self.Dblock:
+            self.dy -= self.GRAVITY * gfw.frame_time
+
+
+        self.x += self.dx * self.speed * gfw.frame_time
         self.y += self.dy * self.speed * gfw.frame_time
 
         # 중력 처리  
         #if self.state != 0:
-        self.dy -= self.GRAVITY * gfw.frame_time
+        
 
         if self.dy != 0:
             self.state = 1
@@ -211,9 +217,9 @@ class Player(gfw.Sprite):
         if e.type == SDL_KEYDOWN:
             
             if e.key == SDLK_LEFT:
-                self.LeftToggles = True
+                    self.LeftToggles = True
             elif e.key == SDLK_RIGHT: 
-                self.RightToggles = True
+                    self.RightToggles = True
             elif e.key == SDLK_LSHIFT:
                 self.speed = 300
             elif e.key == SDLK_z:  
@@ -224,7 +230,8 @@ class Player(gfw.Sprite):
                 if(self.attack == False):
                     self.time_atk = 0
                     self.attack = True
-
+            elif e.key == SDLK_h:
+                self.hurt()
         elif e.type == SDL_KEYUP:
             if e.key == SDLK_LEFT:   
                 self.LeftToggles = False
@@ -246,12 +253,16 @@ class Player(gfw.Sprite):
             self.time_jump = 0  
             self.state = 1  
             self.dy = self.JUMP_POWER  
+    def hurt(self,obj = None):
+        self.dy += 2
 
+        self.x -= 15 
+        self.hp -= 1
     def set_state(self, state):
         self.state = state
 
     def get_bb(self):
-        hw, hh = 32, 48  # 바운딩 박스 크기
+        hw, hh = 24, 32  # 바운딩 박스 크기
         return self.x - hw, self.y - hh - 10, self.x + hw, self.y + hh - 10
     def get_atk_bb(self):
         bw,bh = 48,32

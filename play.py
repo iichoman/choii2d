@@ -2,27 +2,28 @@ from pico2d import *
 from gfw import *
 from player import Player
 from monster import Monster
-
+from bubble import Bubble
+from interface import Interface
 # map test
 #from settings import *
 #from level import Level
 #level = Level(level_data, surface)
 
-world = World(['bg', 'player', 'monster'])
+world = World(['bg', 'player', 'monster', 'HUD', 'bubble'])
 
-#canvas_width = 800
-#canvas_height = 600
-canvas_width = 1280
-canvas_height = 960
+canvas_width = 800
+canvas_height = 600
+#canvas_width = 1280
+#canvas_height = 960
 shows_bounding_box = True
 shows_object_count = True
 
 def enter():
-    global bg, player
+    global bg, player, monster, bubble
 
     loaded = world.load(' ')
     print(f'{loaded=} world object count={world.count()}')
-    if loaded: # world.count() > 0:
+    if loaded: # wohi = 0 rld.count() > 0:
         player = list(world.objects_at(world.layer.player))[0]
         bg = player.bg
         world.bg = bg
@@ -34,6 +35,15 @@ def enter():
     world.append(bg, world.layer.bg)
     world.bg = bg    
 
+    #for i in range(1):
+    #    world.append(Bubble(), world.layer.bubble)
+    #    world.append(Bubble(), world.layer.bubble)
+    #       world.append(Bubble(), world.layer.bubble)
+    
+    world.append(Bubble(), world.layer.bubble)
+    world.append(Bubble(), world.layer.bubble)
+    world.append(Bubble(), world.layer.bubble)
+    
     player = Player()
     player.bg = bg
     world.append(player, world.layer.player)
@@ -42,6 +52,9 @@ def enter():
     monster.bg = bg
     world.append(monster, world.layer.monster)
     # test
+    HUD = Interface(h = canvas_height)
+    HUD.bg = bg 
+    world.append(HUD, world.layer.HUD)
     
 def exit():
     world.clear()

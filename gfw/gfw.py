@@ -105,7 +105,7 @@ def _load_system_font():
     paths = [ 'lucon.ttf', 'res/lucon.ttf', 'C:/Windows/Fonts/lucon.ttf' ]
     for path in paths:
         try:
-            font = load_font(path, 20)
+            font = load_font(path, 30)
             print(f'System Font Loaded: {path}')
             gfw._system_font = font
             # print(f'{gfw.shows_object_count=} and {gfw._system_font=}')

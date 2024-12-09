@@ -6,7 +6,7 @@ class Monster(gfw.Sprite):
     GRAVITY = 12  # 중력 값
     FRICTION = 10
     def __init__(self):
-        super().__init__('res/mobs/monstersbasic02.png', 800, 128)
+        super().__init__('res/mobs/monstersbasic02.png', 500, 100)
         self.time = 0
         self.frame = 0
         self.dx, self.dy = 0, 0  # x, y 방향 이동
@@ -77,6 +77,8 @@ class Monster(gfw.Sprite):
         player = gfw.top().player
         collides = gfw.collides_box(player, self)
         if collides:
+            if self.state != 3:
+                player.hurt(obj = self)
             self.state = 3
 
 
@@ -92,8 +94,8 @@ class Monster(gfw.Sprite):
 
     def sense_player(self):
         player = gfw.top().player
-
-        if self.y == player.y:
+        #print(self.y, round(player.y))
+        if player.y <= self.y+48 and self.y-48 <= player.y :
             if self.state == 0 or self.state == 1:
                 if player.x < self.x and self.flip == 'h':
                     if self.x - player.x < 500:

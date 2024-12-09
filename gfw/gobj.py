@@ -352,6 +352,10 @@ class MapBackground(ScrollBackground):
                             break  # 타일셋을 찾으면 더 이상 검색하지 않음
                     #print(layer.name)
                     #if tile != 0 :  # 빈 타일이 아니면
+                    player = gfw.top().player
+                    # bubbles를 3개로 고정하고 각각 상태를 따로 관리해야하나
+                    # 지금 문제가 한번에 세개가 다 그게됨 
+                    # 아마도 루프가 계속 도니까 1,2,3번 모두 act를 0으로 만드는 
                     if layer.name == 'bubble':
                                 bubbles = world.objects_at(world.layer.bubble)
                                 
@@ -360,11 +364,12 @@ class MapBackground(ScrollBackground):
                                     if bubble.act == 1:
                                         bubble.cnt += 1
                                         print ("")
-                                        bubble.x = left
-                                        bubble.y = dst_top
+                                        bubble.x = left + player.x - 350
+                                        bubble.y = dst_botm + player.y - 250
                                         bubble.act = 0
                                         break
-                    player = gfw.top().player
+                                    
+                    
                     if layer.name == 'terrain':
                         
                         

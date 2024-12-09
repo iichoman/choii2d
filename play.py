@@ -23,7 +23,7 @@ def enter():
 
     loaded = world.load(' ')
     print(f'{loaded=} world object count={world.count()}')
-    if loaded: # wohi = 0 rld.count() > 0:
+    if loaded: # world.count() > 0:
         player = list(world.objects_at(world.layer.player))[0]
         bg = player.bg
         world.bg = bg

@@ -23,7 +23,7 @@ class Player(gfw.Sprite):
     JUMP_POWER = 0 # 점프 힘
     MAX_JUMP_POWER = 3
 
-    def __init__(self):
+    def __init__(self, x = None, y = None):
         super().__init__('res/char/char.png', 300, 300)
         self.time_move = 0  # 시간 (초 단위)
         self.time_atk = 0
@@ -32,6 +32,10 @@ class Player(gfw.Sprite):
         self.frame_move = 0
         self.frame_atk = 0
         self.frame_jump = 0
+        if x is not None:
+            self.x = x
+        if y is not None:
+            self.y = y
         self.dx, self.dy = 0, 0  # x, y 방향 속도
         self.speed = 500  # 기본 이동 속도
         self.Lblock = False

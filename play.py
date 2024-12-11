@@ -9,7 +9,8 @@ from interface import Interface
 #from level import Level
 #level = Level(level_data, surface)
 
-world = World(['bg', 'player', 'monster', 'HUD', 'bubble'])
+world = World(['bg', 'player', 'monster', 'HUD', 'bubble', 
+    'bubble1', 'bubble2', 'bubble3', 'trap', 'test'])
 
 canvas_width = 800
 canvas_height = 600
@@ -19,11 +20,13 @@ shows_bounding_box = True
 shows_object_count = True
 
 def enter():
-    global bg, player, monster, bubble
+    global bg, player, monster, bubble, bubble1, bubble2, bubble3, trap
+
+    global test     #test layer
 
     loaded = world.load(' ')
     print(f'{loaded=} world object count={world.count()}')
-    if loaded: # world.count() > 0:
+    if loaded: # wohi = 0 rld.count() > 0:
         player = list(world.objects_at(world.layer.player))[0]
         bg = player.bg
         world.bg = bg
@@ -35,7 +38,7 @@ def enter():
     world.append(bg, world.layer.bg)
     world.bg = bg    
 
-    #for i in range(1):
+    #for i in rzange(1):
     #    world.append(Bubble(), world.layer.bubble)
     #    world.append(Bubble(), world.layer.bubble)
     #       world.append(Bubble(), world.layer.bubble)
@@ -43,14 +46,29 @@ def enter():
     world.append(Bubble(), world.layer.bubble)
     world.append(Bubble(), world.layer.bubble)
     world.append(Bubble(), world.layer.bubble)
-    
+
+  
+    bubble1 = Bubble()
+    bubble1.bg = bg 
+    world.append(bubble1, world.layer.bubble1)
+
+    bubble2 = Bubble()
+    bubble2.bg = bg 
+    world.append(bubble2, world.layer.bubble2)
+
+    bubble3 = Bubble()
+    bubble3.bg = bg 
+    world.append(bubble3, world.layer.bubble3)
+
+    #player = Player(x = 500, y = -800)
     player = Player()
     player.bg = bg
     world.append(player, world.layer.player)
 
-    monster = Monster()
-    monster.bg = bg
-    world.append(monster, world.layer.monster)
+    # 몬스터 생성 그냥 랜덤하게? 흠..
+    # 방울도 이거처럼 x, y값 하드코딩하면 되기는 함 ㅇㅇ  
+    world.append(Monster(x=700, y=500), world.layer.monster)
+    
     # test
     HUD = Interface(h = canvas_height)
     HUD.bg = bg 

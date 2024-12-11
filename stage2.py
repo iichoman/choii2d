@@ -1,11 +1,10 @@
 from pico2d import * 
 from gfw import *
 from player import Player
-from monster import Monster, Bat, Spider
+from monster import Monster
 from door import Door 
 from bubble import Bubble
 from interface import Interface
-import stage2
 # map test
 #from settings import *
 #from level import Level
@@ -34,7 +33,7 @@ def enter():
         world.bg = bg
         return
     #bg = gfw.MapBackground2('res/desert.tmj', fitsWidth=False, fitsHeight=False)
-    bg = gfw.MapBackground('res/cave1-1.json', fitsWidth=False, fitsHeight=False)
+    bg = gfw.MapBackground('res/cave1-2.json', fitsWidth=False, fitsHeight=False)
     #bg = ScrollBackground('res/maps/ttt.png')
     
     world.append(bg, world.layer.bg)
@@ -73,10 +72,9 @@ def enter():
     # 몬스터 생성 그냥 랜덤하게? 흠..
     # 방울도 이거처럼 x, y값 하드코딩하면 되기는 함 ㅇㅇ  
     #world.append(Monster(x=700, y=500), world.layer.monster)
-    world.append(Monster(x=1200, y=300), world.layer.monster)
+    #world.append(Monster(x=900, y=500), world.layer.monster)
     #world.append(Monster(x=800, y=500), world.layer.monster)
-    world.append(Bat(x=1200, y=300), world.layer.monster) 
-    world.append(Spider(x=800, y=300), world.layer.monster)    
+    
     # test
     HUD = Interface(h = canvas_height)
     HUD.bg = bg 
@@ -102,11 +100,8 @@ def handle_event(e):
             #    shows_bounding_box = True
             #else: 
             #    shows_bounding_box = False
-        elif e.key == SDLK_p:
-            gfw.push(stage2)
     
-    if player.next_stage == True:
-        gfw.push(stage2)
+
     player.handle_event(e)
 
 if __name__ == '__main__':

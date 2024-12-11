@@ -260,6 +260,7 @@ class MapBackground(ScrollBackground):
     def draw(self):
         LC, RC = 0, 0
         UC, DC = 0, 0
+        CHK = 0
         BBC = 0 
         """맵을 그리는 함수. 모든 레이어를 순차적으로 그립니다."""
         cw, ch = get_canvas_width(), get_canvas_height()  # 화면 크기
@@ -362,15 +363,19 @@ class MapBackground(ScrollBackground):
                     bubble1 = gfw.top().bubble1
                     bubble2 = gfw.top().bubble2
                     bubble3 = gfw.top().bubble3
+                    door = gfw.top().door
                     # bubbles를 3개로 고정하고 각각 상태를 따로 관리해야하나
                     # 지금 문제가 한번에 세개가 다 그게됨 
                     # 아마도 루프가 계속 도니까 1,2,3번 모두 act를 0으로 만드는
                     # BBC가 0이었다가 1인경우, 2인경우, 3인경우 
                     # 1이었다가 0이 되는 경우 
-
+                    if layer.name == 'door':
+                        door.x = left + player.x - 586
+                        door.y = dst_botm + player.y - 427
+                        pass
                     if layer.name == 'bubble':
                         #tileB = layer.data[t_index]
-                        print(tile)
+                        #print(tile)
                         if bubble1.act == 1:
                             bubble1.x = left + player.x - 350
                             bubble1.y = dst_botm + player.y - 250
@@ -396,16 +401,10 @@ class MapBackground(ScrollBackground):
                     # 방울 이거 정 안되면 하드코딩으로 해야될 듯
                     # 아니 그냥 하드코딩 하는게 더 좋을 듯 - 시간이 없음 
                  
-                    
-                    if layer.name == 'terrain':
-                        
-                        
-                        # 타일 위치를 (left, dst_top)에서 시작
-                        # 타일 크기는 self.tilesize
-
+                    if layer.name == 'spike':
                         tl, tb, tr, tt = round(left + self.x), round(dst_top - self.tilesize + self.y), round(left + self.tilesize + self.x), round(dst_top + self.y)
                        
-
+                        tt = tt - 50
                         # 플레이어 타일충돌 여기에    
                         tile_bb = tl, tb, tr, tt
                         l_bb = tl, tb+5, tl, tt-5
@@ -436,6 +435,93 @@ class MapBackground(ScrollBackground):
                         
                         if tcollides:
                             #if player.state == 1:
+                                #player.Dblock = True
+                                #DC += 1
+                                player.hp = 0
+                                #if rpb < tt :
+                                    
+                                #    player.y += tt-rpb
+                                #player.y = dst_top + self.y + 58 
+                                
+                                player.state = 0
+                                #print("???")
+                                #print(gfw.frame_time)
+                                #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
+                        
+                    if layer.name == 'hang':
+                        tl, tb, tr, tt = round(left + self.x), round(dst_top - self.tilesize + self.y), round(left + self.tilesize + self.x), round(dst_top + self.y)
+                       
+
+                        # 플레이어 타일충돌 여기에    
+                        tile_bb = tl, tb, tr, tt
+                        l_bb = tl, tb+5, tl, tt-5
+                        b_bb = tl+5, tb, tr-5, tb
+                        r_bb = tr, tb+5, tr, tt-5
+                        t_bb = tl+5, tt, tr-5, tt
+                        #
+                        player = gfw.top().player
+                        pl, pb, pr, pt = player.get_bb()
+                        rpl, rpb, rpr, rpt = round(pl), round(pb), round(pr), round(pt)
+                        p_bb = rpl, rpb, rpr, rpt
+
+                        lcollides = gfw.collides_bb(l_bb, p_bb)
+                        rcollides = gfw.collides_bb(r_bb, p_bb)
+
+                        if lcollides:
+                            if not player.attack and player.flip == ' ':
+                                if player.dy < 0 and tb - 10 <= round(pt) and round(pt) <= tb + 10 :
+                                    player.y = tb
+                                    player.dy = 0
+
+                                    player.hang = True
+                                    #player.time_hang = 0
+
+                        if rcollides:
+                            if not player.attack and player.flip == 'h':
+                                if player.dy < 0 and tb - 10 <= round(pt) and round(pt) <= tb + 10 :
+                                    player.y = tb
+                                    player.dy = 0
+                                    player.hang = True
+                                    #player.time_hang = 0
+
+                    if layer.name == 'terrain':
+
+                        
+                        # 타일 위치를 (left, dst_top)에서 시작
+                        # 타일 크기는 self.tilesize
+
+                        tl, tb, tr, tt = round(left + self.x), round(dst_top - self.tilesize + self.y), round(left + self.tilesize + self.x), round(dst_top + self.y)
+                       
+
+                        # 플레이어 타일충돌 여기에    
+                        tile_bb = tl, tb, tr, tt
+                        l_bb = tl, tb+5, tl, tt-5
+                        b_bb = tl+5, tb, tr-5, tb
+                        r_bb = tr, tb+5, tr, tt-5
+                        t_bb = tl+5, tt, tr-5, tt
+                        #
+                        player = gfw.top().player
+                        pl, pb, pr, pt = player.get_bb()
+                        rpl, rpb, rpr, rpt = round(pl), round(pb), round(pr), round(pt)
+                        p_bb = rpl, rpb, rpr, rpt
+
+                        collides = gfw.collides_bb(tile_bb, p_bb)
+                        lcollides = gfw.collides_bb(l_bb, p_bb)
+                        bcollides = gfw.collides_bb(b_bb, p_bb)
+                        rcollides = gfw.collides_bb(r_bb, p_bb)
+                        tcollides = gfw.collides_bb(t_bb, p_bb)
+                      
+                        gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
+                        
+                        #gfw.draw_rectangle(*tile_bb)
+                        gfw.draw_rectangle(*l_bb)
+                        gfw.draw_rectangle(*b_bb)
+                        gfw.draw_rectangle(*r_bb)
+                        gfw.draw_rectangle(*t_bb)
+
+                        gfw.draw_rectangle(*p_bb)
+                        if tcollides:
+                            #if player.state == 1:
                                 player.Dblock = True
                                 DC += 1
                                 player.dy = 0
@@ -457,6 +543,7 @@ class MapBackground(ScrollBackground):
 
                                 if rpl < tr:
                                     player.x += tr - rpl
+                            
 
                         elif lcollides:
                             player.dx = 0
@@ -466,7 +553,7 @@ class MapBackground(ScrollBackground):
 
                                 if rpr > tl :
                                     player.x -=  rpr - tl
-                            
+
                         elif bcollides:
                             player.dy = 0 
                             if rpt > tb:
@@ -474,10 +561,9 @@ class MapBackground(ScrollBackground):
                         
                         #self.tilePlayer    # 왜 플레이어는 함수로 만들면 덜덜 떨리는거? 
                                             #일단 사용하지 않음
-                        
+
                         self.tileMonster(tl, tb, tr, tt, RC, LC, UC, DC) # 몬스터 왜자꾸 바닥 뚫는지??
                         
-
                     left += self.tilesize  # 다음 타일을 그릴 위치로 이동
                     tx += 1
                     if tx >= layer.width:  # 한 줄을 다 그리면
@@ -490,6 +576,7 @@ class MapBackground(ScrollBackground):
                     if not self.wraps:  # wraps가 False이면 반복하지 않음
                         break
                     ty -= layer.height  # wraps가 True이면 다시 첫 번째 줄로 돌아감
+
         #print(player.Lblock)
         if RC == 0:
             player.Rblock = False
@@ -525,7 +612,7 @@ class MapBackground(ScrollBackground):
         gfw.draw_rectangle(*t_bb)
 
         gfw.draw_rectangle(*p_bb)
-        
+        print(lcollides)
         if tcollides:
             #if player.state == 1:
                 player.Dblock = True
@@ -549,7 +636,9 @@ class MapBackground(ScrollBackground):
 
                 if rpl < tr:
                     player.x += tr - rpl
-
+        elif lcollides and pt >= tt:
+            player.y = tt
+            player.dy = 0
         elif lcollides:
             player.dx = 0
             RC += 1
@@ -598,7 +687,6 @@ class MapBackground(ScrollBackground):
             if tcollides:
                 #if monster.state == 1:
                     monster.Dblock = True
-                    DC += 1
                     monster.dy = 0
                     if rpb < tt :
                         
@@ -609,10 +697,10 @@ class MapBackground(ScrollBackground):
                     #print("???")
                     #print(gfw.frame_time)
                     #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
-            
+
             elif rcollides:
-                monster.dx = 0
-                LC += 1
+                monster.dx = -monster.dx
+                monster.flip = ' '
                 monster.Lblock = True
                 if rpb < tt:
 
@@ -620,8 +708,8 @@ class MapBackground(ScrollBackground):
                         monster.x += tr - rpl
 
             elif lcollides:
-                monster.dx = 0
-                RC += 1
+                monster.dx = -monster.dx
+                monster.flip = 'h'
                 monster.Rblock = True
                 if rpb < tt:
 
@@ -632,5 +720,6 @@ class MapBackground(ScrollBackground):
                 monster.dy = 0 
                 if rpt > tb:
                         monster.y -= rpt - tb + 1   
-
+            if not tcollides:
+                monster.Dblock = False
 

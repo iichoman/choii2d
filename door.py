@@ -1,8 +1,36 @@
 #door.py
 # 바운딩 박스만 가지면 된다 ㅇㅇ 
+from pico2d import *
+import gfw
+import random
 
-class Door():
+
+class Door(gfw.Sprite):
+	def __init__(self):
+		super().__init__('res/temp/items.png',-999,-999)
+		self.enter = 0
+		self.enter_count = 0
+		self.next = 0
+	def draw(self):
+		pass
 	def update(self):
-		#부딪히면 값을 반환
-		# 플레이어가 값을 받으면 a키를 눌러 문으로 들어감 - 스테이지 클리어
-	
+		player = gfw.top().player
+		collides = gfw.collides_box(player, self)
+		if collides:
+			self.enter = 1
+		else:
+			self.enter = 0
+		if self.enter == 1:
+			#player.x = self.x
+			#self.enter_count += gfw.frame_time
+			#if self.enter_count == 2:
+				#gfw.push(stage2)
+			
+			# 플레이어가 땅에 닿아있을떄만 드가야함
+			player.go_to_door= True
+		
+	def check_collision_with_player(self):
+		pass
+	def get_bb(self):
+		hw, hh = 52, 52  # 바운딩 박스 크기
+		return self.x - hw, self.y - hh, self.x + hw, self.y + hh

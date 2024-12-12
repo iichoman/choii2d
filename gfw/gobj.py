@@ -200,7 +200,7 @@ def _get_folder(filename):
     return '.' if idx < 0 else filename[:idx]
 
 class MapBackground(ScrollBackground):
-    def __init__(self, filename, tilesize=108, wraps=False, fitsWidth=False, fitsHeight=False, dx=0, dy=0):
+    def __init__(self, filename, tilesize=108, wraps=False, fitsWidth=30, fitsHeight=30, dx=0, dy=0):
         super().__init__(None)
         self.filename = filename
         self.folder = _get_folder(filename)  # 파일 경로에서 폴더명 추출
@@ -263,15 +263,17 @@ class MapBackground(ScrollBackground):
         CHK = 0
         BBC = 0 
         """맵을 그리는 함수. 모든 레이어를 순차적으로 그립니다."""
-        cw, ch = get_canvas_width(), get_canvas_height()  # 화면 크기
+        cw, ch = get_canvas_width(), get_canvas_height()# 화면 크기
 
         # 현재 스크롤 위치에 맞춰 시작 좌표를 계산
         sx, sy = round(self.x), -round(self.y)
 
         # 맵이 반복되는 경우 (wraps가 True인 경우) 스크롤 위치가 맵의 끝을 넘어가면 다시 처음으로 돌아가도록 처리
         if self.wraps:
-            map_total_width = self.tmap.width * self.tilesize
-            map_total_height = self.tmap.height * self.tilesize
+            #map_total_width = self.tmap.width * self.tilesize
+            #map_total_height = self.tmap.height * self.tilesize
+            #map_total_width = 50
+            #map_total_height = 50
             sx %= map_total_width
             if sx < 0:
                 sx += map_total_width
@@ -284,8 +286,8 @@ class MapBackground(ScrollBackground):
         tile_y = sy // self.tilesize  # 시작 타일의 y 좌표
 
         # 화면 상에 그려질 타일의 좌측 상단 위치를 계산
-        beg_x = -(sx % self.tilesize)
-        beg_y = -(sy % self.tilesize)
+        beg_x = -(sx % self.tilesize) 
+        beg_y = -(sy % self.tilesize) 
 
         # 모든 레이어를 그리기 위한 반복문
         
@@ -336,7 +338,7 @@ class MapBackground(ScrollBackground):
                             dst_botm = dst_top - self.tilesize  # 화면 상의 타일 하단 위치
                             # 타일 그리기 (타일셋 이미지에서 해당 타일을 잘라서 화면에 그리기)
 
-                            if layer.name == 'bubble':
+                            if layer.name == 'bubble' or layer.name =='door':
                                              
 
                                 # bubble의 초기위치 -999,-999
@@ -495,9 +497,9 @@ class MapBackground(ScrollBackground):
 
                         # 플레이어 타일충돌 여기에    
                         tile_bb = tl, tb, tr, tt
-                        l_bb = tl, tb+5, tl, tt-5
+                        l_bb = tl, tb+50, tl, tt-5
                         b_bb = tl+5, tb, tr-5, tb
-                        r_bb = tr, tb+5, tr, tt-5
+                        r_bb = tr, tb+50, tr, tt-5
                         t_bb = tl+5, tt, tr-5, tt
                         #
                         player = gfw.top().player
@@ -524,13 +526,17 @@ class MapBackground(ScrollBackground):
                             #if player.state == 1:
                                 player.Dblock = True
                                 DC += 1
+                                if player.dy <= -6:
+                                    player.hp -= 1 #낙뎀
+                                    player.stun = 1
                                 player.dy = 0
+
                                 if rpb < tt :
                                     
                                     player.y += tt-rpb
                                 #player.y = dst_top + self.y + 58 
-                                
-                                player.state = 0
+                                if player.stun != 1:
+                                    player.state = 0
                                 #print("???")
                                 #print(gfw.frame_time)
                                 #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
@@ -554,7 +560,7 @@ class MapBackground(ScrollBackground):
                                 if rpr > tl :
                                     player.x -=  rpr - tl
 
-                        elif bcollides:
+                        elif bcollides or (bcollides and lcollides) or (bcollides and rcollides):
                             player.dy = 0 
                             if rpt > tb:
                                     player.y -= rpt - tb + 1
@@ -584,142 +590,85 @@ class MapBackground(ScrollBackground):
             player.Lblock = False
         if DC == 0:
             player.Dblock = False
-    def tilePlayer(self, tl, tb, tr, tt, RC, LC, UC, DC):
-
-        tile_bb = tl, tb, tr, tt
-        l_bb = tl, tb+5, tl, tt-5
-        b_bb = tl+5, tb, tr-5, tb
-        r_bb = tr, tb+5, tr, tt-5
-        t_bb = tl+5, tt, tr-5, tt
-        #
-        player = gfw.top().player
-        pl, pb, pr, pt = player.get_bb()
-        rpl, rpb, rpr, rpt = round(pl), round(pb), round(pr), round(pt)
-        p_bb = rpl, rpb, rpr, rpt
-
-        collides = gfw.collides_bb(tile_bb, p_bb)
-        lcollides = gfw.collides_bb(l_bb, p_bb)
-        bcollides = gfw.collides_bb(b_bb, p_bb)
-        rcollides = gfw.collides_bb(r_bb, p_bb)
-        tcollides = gfw.collides_bb(t_bb, p_bb)
-      
-        #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
-        
-        #gfw.draw_rectangle(*tile_bb)
-        gfw.draw_rectangle(*l_bb)
-        gfw.draw_rectangle(*b_bb)
-        gfw.draw_rectangle(*r_bb)
-        gfw.draw_rectangle(*t_bb)
-
-        gfw.draw_rectangle(*p_bb)
-        print(lcollides)
-        if tcollides:
-            #if player.state == 1:
-                player.Dblock = True
-                DC += 1
-                player.dy = 0
-                if rpb < tt :
-                    
-                    player.y += tt-rpb
-                #player.y = dst_top + self.y + 58 
-                
-                player.state = 0
-                #print("???")
-                #print(gfw.frame_time)
-                #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
-        
-        elif rcollides:
-            player.dx = 0
-            LC += 1
-            player.Lblock = True
-            if rpb < tt:
-
-                if rpl < tr:
-                    player.x += tr - rpl
-        elif lcollides and pt >= tt:
-            player.y = tt
-            player.dy = 0
-        elif lcollides:
-            player.dx = 0
-            RC += 1
-            player.Rblock = True
-            if rpb < tt:
-
-                if rpr > tl :
-                    player.x -=  rpr - tl
-            
-        elif bcollides:
-            player.dy = 0 
-            if rpt > tb:
-                    player.y -= rpt - tb + 1   
+    
     def tileMonster(self, tl, tb, tr, tt, RC, LC, UC, DC):
         tile_bb = tl, tb, tr, tt
-        l_bb = tl, tb+5, tl, tt-5
+        l_bb = tl, tb+50, tl, tt-5
         b_bb = tl+5, tb, tr-5, tb
-        r_bb = tr, tb+5, tr, tt-5
+        r_bb = tr, tb+50, tr, tt-5
         t_bb = tl+5, tt, tr-5, tt
 
         #
         #monster = gfw.top().monster
         world = gfw.top().world
         monsters = world.objects_at(world.layer.monster)
+        player = gfw.top().player
         for monster in monsters:
-            pl, pb, pr, pt = monster.get_bb()
-            rpl, rpb, rpr, rpt = round(pl), round(pb), round(pr), round(pt)
-            p_bb = rpl, rpb, rpr, rpt
+            if player.x - 640 <= monster.x and monster.x <= player.x + 640 and player.y - 480 <= monster.y <= player.y + 480:
+                pl, pb, pr, pt = monster.get_bb()
+                rpl, rpb, rpr, rpt = round(pl), round(pb), round(pr), round(pt)
+                p_bb = rpl, rpb, rpr, rpt
 
-            collides = gfw.collides_bb(tile_bb, p_bb)
-            lcollides = gfw.collides_bb(l_bb, p_bb)
-            bcollides = gfw.collides_bb(b_bb, p_bb)
-            rcollides = gfw.collides_bb(r_bb, p_bb)
-            tcollides = gfw.collides_bb(t_bb, p_bb)
-          
-            #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
-            
-            #gfw.draw_rectangle(*tile_bb)
-            gfw.draw_rectangle(*l_bb)
-            gfw.draw_rectangle(*b_bb)
-            gfw.draw_rectangle(*r_bb)
-            gfw.draw_rectangle(*t_bb)
-
-            gfw.draw_rectangle(*p_bb)
-            
-            if tcollides:
-                #if monster.state == 1:
-                    monster.Dblock = True
-                    monster.dy = 0
-                    if rpb < tt :
-                        
-                        monster.y += tt-rpb
-                    #monster.y = dst_top + self.y + 58 
-                    
-                    #monster.state = 0
-                    #print("???")
-                    #print(gfw.frame_time)
-                    #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
-
-            elif rcollides:
-                monster.dx = -monster.dx
-                monster.flip = ' '
-                monster.Lblock = True
-                if rpb < tt:
-
-                    if rpl < tr:
-                        monster.x += tr - rpl
-
-            elif lcollides:
-                monster.dx = -monster.dx
-                monster.flip = 'h'
-                monster.Rblock = True
-                if rpb < tt:
-
-                    if rpr > tl :
-                        monster.x -=  rpr - tl
+                collides = gfw.collides_bb(tile_bb, p_bb)
+                lcollides = gfw.collides_bb(l_bb, p_bb)
+                bcollides = gfw.collides_bb(b_bb, p_bb)
+                rcollides = gfw.collides_bb(r_bb, p_bb)
+                tcollides = gfw.collides_bb(t_bb, p_bb)
+              
+                #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
                 
-            elif bcollides:
-                monster.dy = 0 
-                if rpt > tb:
-                        monster.y -= rpt - tb + 1   
-            if not tcollides:
-                monster.Dblock = False
+                #gfw.draw_rectangle(*tile_bb)
+                gfw.draw_rectangle(*l_bb)
+                gfw.draw_rectangle(*b_bb)
+                gfw.draw_rectangle(*r_bb)
+                gfw.draw_rectangle(*t_bb)
+
+                gfw.draw_rectangle(*p_bb)
+                
+                if tcollides:
+                    #if monster.state == 1:
+                        monster.Dblock = True
+                        monster.dy = 0
+                        if rpb < tt :
+                            
+                            monster.y += tt-rpb
+                        #monster.y = dst_top + self.y + 58 
+                        if monster.kind == 5:
+                            monster.Trap = 0
+                            monster.speed = 300
+                        #monster.state = 0
+                        #print("???")
+                        #print(gfw.frame_time)
+                        #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
+
+                elif rcollides:
+                    monster.dx = -monster.dx
+                    monster.flip = ' '
+                    monster.Lblock = True
+                    if monster.kind == 4:
+                        monster.state = 0
+                    if rpb < tt:
+
+                        if rpl < tr:
+                            monster.x += tr - rpl
+
+                elif lcollides:
+                    monster.dx = -monster.dx
+                    monster.flip = 'h'
+                    monster.Rblock = True
+                    if monster.kind == 4:
+                        monster.state = 0
+                    if monster.kind == 5:
+                        monster.Trap = 0
+                    if rpb < tt:
+
+                        if rpr > tl :
+                            monster.x -=  rpr - tl
+                    
+                elif bcollides:
+                    monster.dy = 0 
+                    if rpt > tb:
+                            monster.y -= rpt - tb + 1   
+                if not tcollides:
+                    monster.Dblock = False
 

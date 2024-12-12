@@ -49,7 +49,7 @@ def start(scene):
                     quit()
                 elif e.type == SDL_KEYDOWN:
                     if e.key == SDLK_ESCAPE:
-                        #pop()
+                        pop()
                         # 바로 pop()하지 말고 pausemenu를 부른다.
                         # pausemenu는 play화면을 일시정지한 화면 위에 띄워져야함
                         pass

@@ -29,12 +29,19 @@ class Player(gfw.Sprite):
         self.time_atk = 0
         self.time_jump = 0
         self.time_hang = 0
+        self.time_stun = 0
+
+        self.grabbing = 0
 
         self.frame = 0
         self.frame_move = 0
         self.frame_atk = 0
         self.frame_jump = 0
         self.frame_hang = 0
+        self.frame_stun = 0
+        self.scenes = False
+        self.lie_down = False
+        self.hw, self.hh = 27, 32
 
         if x is not None:
             self.x = x
@@ -52,8 +59,8 @@ class Player(gfw.Sprite):
         self.RightToggles = False
        #self.stand = 0  -   # 평소에 stand = 1, 
                             # 엎드리거나 stun 되어 누웠을때 stand = 0
-        self.stun_time = 0
-                            
+
+                                
         self.attack = False
         #self.attack_box = (0,0,0,0)
         #self.ground_y = 128  # 바닥 위치 (y=0) 수정 필요
@@ -75,8 +82,16 @@ class Player(gfw.Sprite):
         self.invincible = 0
         self.invincible_time = 0
 
+        self.short_stun = 0
+        self.short_stun_time = 0
+
+        self.stun = 0
+        self.stun_time = 0
+
         self.next_stage = False
         self.go_to_door = False
+
+        self.target = None
 
         self.hang = False
         self.stop = False
@@ -84,7 +99,8 @@ class Player(gfw.Sprite):
         frame_move = self.frame_move * 128 + 128
         frame_jump = self.frame_jump * 128
         frame_atk = self.frame_atk * 128
-
+        frame_stun = self.frame_stun*128
+        frame_move_lying = self.frame_move % 7 * 128
 
         frame_hang = self.frame_hang * 128 + 128*8
         if self.frame_hang != 3:
@@ -98,7 +114,11 @@ class Player(gfw.Sprite):
             elif self.dy != 0:
                 self.image.clip_composite_draw(128*0, 128*13, 128, 128, 0, self.flip, *screen_pos, 128, 128)
         elif self.state == 3:
-            self.image.clip_composite_draw(128*0, 128*13, 128, 128, 0, self.flip, *screen_pos, 128, 128)
+            if self.move == 0:
+                self.image.clip_composite_draw(128*9, 128*15, 128, 128, 0, self.flip, *screen_pos, 128, 128)
+            else:
+                self.image.clip_composite_draw(128*0, 128*13, 128, 128, 0, self.flip, *screen_pos, 128, 128)
+            self.image.clip_composite_draw(frame_stun, 128*2, 128, 128, 0, self.flip, *screen_pos, 128, 128)
         # 매달리기
         elif self.hang:
             self.image.clip_composite_draw(frame_hang, 128*12, 128, 128, 0, self.flip, *screen_pos, 128, 128)
@@ -111,9 +131,15 @@ class Player(gfw.Sprite):
         elif self.state == 1:
             self.image.clip_composite_draw(frame_jump, 768, 128, 128, 0, self.flip, *screen_pos, 128, 128)
         elif self.move == 0:
-            self.image.clip_composite_draw(0, 1920, 128, 128, 0, self.flip, *screen_pos, 128, 128)
+            if self.lie_down:
+                self.image.clip_composite_draw(128*2, 128*14, 128, 128, 0, self.flip, *screen_pos, 128, 128)
+            else:
+                self.image.clip_composite_draw(0, 1920, 128, 128, 0, self.flip, *screen_pos, 128, 128)
         elif self.move == 1:
-            self.image.clip_composite_draw(frame_move, 1920, 128, 128, 0, self.flip, *screen_pos, 128, 128)
+            if self.lie_down:
+                self.image.clip_composite_draw(frame_move_lying + 128*5, 128*14, 128, 128, 0, self.flip, *screen_pos, 128, 128)
+            else:
+                self.image.clip_composite_draw(frame_move, 1920, 128, 128, 0, self.flip, *screen_pos, 128, 128)
         
         
         
@@ -121,17 +147,48 @@ class Player(gfw.Sprite):
         draw_rectangle(*self.get_draw_atk_bb())
 
     def update(self):
+        if self.scenes:
+            self.dy = 0
+            self. Dblock = 1
+            self.dx = 1
+            self.x += self.dx * self.speed * gfw.frame_time
+            if self.x >= 1150:
+                self.dx = 0
+                self.x = 1150
+        #print(self.x, self.y)
+        print(self.grabbing)
         #최대속도 제한 
         if self.dx >= 108:
             self.dx = 107
+        if self.dx <= -108:
+            self.dx = -107
         if self.dy >= 108:
             self.dy = 107
+        if self.dy <= -108:
+            self.dy = -107
         #무적
         if self.invincible == 1:
             self.invincible_time += gfw.frame_time
             if self.invincible_time >= 2:
-                self.invincible = 0  
                 self.invincible_time = 0
+                self.invincible = 0  
+                
+
+        #짧은 스턴
+        if self.short_stun == 1:
+            self.short_stun_time += gfw.frame_time
+            if self.invincible_time >= 0.2:
+                self.short_stun = 0  
+                self.short_stun_time = 0
+        #긴 스턴
+        if self.stun == 1:
+            self.state = 3
+            self.stun_time += gfw.frame_time
+            if self.stun_time >= 10:
+                self.stun_time = 0
+                self.stun = 0
+                self.state = 0  
+                
         #print (self.invincible_time)
         #print(self.state)
         if self.dy == 0 and self.dx == 0:
@@ -142,10 +199,12 @@ class Player(gfw.Sprite):
         self.time_jump += gfw.frame_time
         self.time_atk += gfw.frame_time
         self.time_hang += gfw.frame_time
+        self.time_stun += gfw.frame_time
         fps = 10
 
         self.frame_move = round(self.time_move * fps*2) % 8
         self.frame_jump = round(self.time_jump * fps) % 8
+        self.frame_stun = round(self.time_stun* fps) % 12
         if not self.hang:
             self.time_hang = 0
             self.frame_hang = 0
@@ -159,10 +218,10 @@ class Player(gfw.Sprite):
         if self.attack == True:
             self.frame_atk = round(self.time_atk * fps*1.5) % 7
         self.dx = 0
-        if not self.hang:
-            if self.RightToggles and not self.Rblock:
+        if not self.hang :
+            if self.RightToggles and not self.Rblock and self.short_stun != 1 and self.stun != 1:
                 self.dx = 1.5
-            if self.LeftToggles and not self.Lblock:
+            if self.LeftToggles and not self.Lblock and self.short_stun != 1 and self.stun != 1: 
                 self.dx = -1.5
              
             if not self.Dblock and not self.hang:
@@ -176,7 +235,7 @@ class Player(gfw.Sprite):
         #if self.state != 0:
         
 
-        if self.dy != 0:
+        if self.dy != 0 and self.state != 3:
             self.state = 1
             
      
@@ -189,9 +248,8 @@ class Player(gfw.Sprite):
         #마찰력 처리
         if self.state == 3 or self.state == 4:
             self.stun_time += gfw.frame_time
-            if self.state == 3 and self.stun_time >= 5:
-                self.state = 0
-                self.stun_time = 0
+            #if self.state == 3 and self.stun_time >= 7:
+                #self.state = 0
             if 0.05 >= self.dx and self.dx >= -0.05:
             #if self.dx == 0:
                 self.dx = 0
@@ -263,28 +321,49 @@ class Player(gfw.Sprite):
 
 
     def handle_event(self, e):
-        if e.type == SDL_KEYDOWN > 0:
-            if self.hp > 0:
+        if e.type == SDL_KEYDOWN > 0 and not self.scenes:
+            if self.hp > 0 :
                 if e.key == SDLK_LEFT:
-                        self.LeftToggles = True
+                    self.LeftToggles = True
                 elif e.key == SDLK_RIGHT: 
-                        self.RightToggles = True
+                    self.RightToggles = True
+                elif e.key == SDLK_DOWN:
+                    self.lie_down = True
+                    self.speed = 200
                 elif e.key == SDLK_LSHIFT:
                     self.speed = 300
-                elif e.key == SDLK_z:  
+                elif e.key == SDLK_z and not self.lie_down and self.short_stun != 1 and self.stun != 1:  
                     
                     self.JUMP_POWER = 3
                     self.jump()
-                elif e.key == SDLK_x:
-                    if(self.attack == False):
-                        self.time_atk = 0
-                        self.attack = True
-                        if self.hang:
-                            self.hang = False
-                            if self.flip == ' ':
-                                self.x -= 20
-                            else:
-                                self.x += 20
+                elif e.key == SDLK_t:  
+                    self.stun = 1
+                elif self.lie_down:
+                    if e.key == SDLK_x:
+                            print('!!')
+                            self.grab()
+                elif self.grabbing == 1:
+                    if e.key == SDLK_x:
+                            print('!!')
+                            world = gfw.top().world
+                            monsters = world.objects_at(world.layer.monster)
+                            for monster in monsters:
+                                if monster.catched == 1:
+                                    monster.dx = 3
+                                    monster.catched = 0
+                            self.grabbing = 0            
+                elif e.key == SDLK_x and self.short_stun != 1 and self.stun != 1:
+                    if not self.lie_down:
+                        if(self.attack == False):
+                            self.time_atk = 0
+                            self.attack = True
+                            if self.hang:
+                                self.hang = False
+                                if self.flip == ' ':
+                                    self.x -= 20
+                                else:
+                                    self.x += 20
+
                 elif e.key == SDLK_a:
                     if self.go_to_door:
                         self.go_to_door = False
@@ -299,7 +378,9 @@ class Player(gfw.Sprite):
             elif e.key == SDLK_RIGHT: 
                 self.RightToggles = False
                 
-
+            elif e.key == SDLK_DOWN:
+                self.lie_down = False
+                self.speed = 500
             elif e.key == SDLK_LSHIFT:
                 self.speed = 500
 
@@ -314,21 +395,49 @@ class Player(gfw.Sprite):
             self.state = 1  
             self.dy = self.JUMP_POWER  
             self.hang = False
-
+    def critical_hurt(self):
+        if self.short_stun == 0 or self.hp <= 0:
+            self.short_stun = 1
+            self.invincible = 1
+            self.stun = 1
+            self.y += 30
+            self.dy = 4
+            self.x -= 15 
+            self.dx = 3
+            self.hp -= 1
     def hurt(self, obj = None):
         if self.invincible == 0 or self.hp <= 0:
             self.invincible = 1
+            self.short_stun = 1
             self.y += 30
             self.dy = 2
             self.x -= 15 
             self.dx = 2
             self.hp -= 1
+
+    def stun(self):
+        if self.state != 3:
+            self.state = 3
+    def grab(self):
+        world = gfw.top().world
+        monsters = world.objects_at(world.layer.monster)
+        for monster in monsters:
+            collides = gfw.collides_box(monster, self)
+            if collides: 
+                if monster.state == 3 or monster.state == 4:
+                    monster.catched = 1
+                    self.target = monster
+                    self.grabbing = 1
+                    #monster.x = self.x
+                    #monster.y = self.y
+                    break
     def set_state(self, state):
         self.state = state
 
     def get_bb(self):
-        hw, hh = 27, 32  # 바운딩 박스 크기
-        return self.x - hw, self.y - hh - 25, self.x + hw, self.y + hh - 15
+        if self.lie_down:
+            return self.x - self.hw, self.y - self.hh - 25, self.x + self.hw, self.y + self.hh - 45
+        return self.x - self.hw, self.y - self.hh - 25, self.x + self.hw, self.y + self.hh - 15
     def step_on(self, monster):
         pass
     def get_atk_bb(self):

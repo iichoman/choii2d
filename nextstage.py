@@ -1,5 +1,3 @@
-#play.py
-
 from pico2d import * 
 from gfw import *
 from player import Player
@@ -7,7 +5,7 @@ from monster import Monster
 from door import Door 
 from bubble import Bubble
 from interface import Interface
-import stage1
+import stage2
 # map test
 #from settings import *
 #from level import Level
@@ -106,7 +104,7 @@ def handle_event(e):
             #else: 
             #    shows_bounding_box = False
         elif e.key == SDLK_z:
-            gfw.push(stage1)
+            gfw.push(stage2)
     
 
     player.handle_event(e)

@@ -7,6 +7,7 @@ from bubble import Bubble
 from interface import Interface
 
 import nextstage
+import gameover
 # map test
 #from settings import *
 #from level import Level
@@ -56,24 +57,24 @@ def enter():
     door.bg = bg
     world.append(door, world.layer.door)
 
-    bubble1 = Bubble()
+    bubble1 = Bubble(x= 586, y= -494)
     bubble1.bg = bg 
     world.append(bubble1, world.layer.bubble1)
 
-    bubble2 = Bubble()
+    bubble2 = Bubble(x = 3450, y = -600)
     bubble2.bg = bg 
     world.append(bubble2, world.layer.bubble2)
 
-    bubble3 = Bubble()
+    bubble3 = Bubble(x=2010, y=-2000)
     bubble3.bg = bg 
     world.append(bubble3, world.layer.bubble3)
 
     player = Player(x = 500, y = 500)
-    #player = Player()
+    #plzayer = Player()
     player.bg = bg
     world.append(player, world.layer.player)
 
-    # 몬스터 생성 그냥 랜덤하게? 흠..
+
     # 방울도 이거처럼 x, y값 하드코딩하면 되기는 함 ㅇㅇ  
     world.append(Arrow(x=702, y=-200), world.layer.monster)
     
@@ -126,7 +127,8 @@ def handle_event(e):
             #    shows_bounding_box = False
         elif e.key == SDLK_p:
             gfw.push(stage2)
-    
+    if player.hp <= 0:
+        gfw.push(gameover)
     if player.next_stage == True:
         gfw.push(nextstage)
     player.handle_event(e)

@@ -375,24 +375,6 @@ class MapBackground(ScrollBackground):
                         door.x = left + player.x - 586
                         door.y = dst_botm + player.y - 427
                         pass
-                    if layer.name == 'bubble':
-                        #tileB = layer.data[t_index]
-                        #print(tile)
-                        if bubble1.act == 1:
-                            bubble1.x = left + player.x - 350
-                            bubble1.y = dst_botm + player.y - 250
-                            bubble1.act = 0
-                            self.BubbleCount = 1
-                        else:
-                            if bubble2.act == 1:
-                                bubble2.x = left + player.x - 350
-                                bubble2.y = dst_botm + player.y - 250
-                                bubble2.act = 0
-                            else:
-                                if bubble3.act == 1:
-                                    bubble3.x = left + player.x - 350
-                                    bubble3.y = dst_botm + player.y - 250
-                                    bubble3.act = 0
                     #print(bubble1.x, bubble2.x, bubble1.y, bubble2.y)
                     #print(bubble1.act,bubble2.act,bubble3.act)
                     #if round(bubble1.x) == round(bubble2.x) and round(bubble1.y) == round(bubble2.y):

@@ -30,9 +30,9 @@ class Player(gfw.Sprite):
         self.time_jump = 0
         self.time_hang = 0
         self.time_stun = 0
-
+        self.bubbles = 0
         self.grabbing = 0
-
+        self.cosmic = 0
         self.frame = 0
         self.frame_move = 0
         self.frame_atk = 0
@@ -147,7 +147,18 @@ class Player(gfw.Sprite):
         draw_rectangle(*self.get_draw_atk_bb())
 
     def update(self):
-        if self.scenes:
+        #if self.dy
+        if self.cosmic == 1:
+            if self.dy <= -10:
+                self.dy = -10
+            if self.y <= -5000:
+                    self.dy = 10
+                    self.y = 1000
+            if self.x <= 650:
+                self.x = 5970
+            if self.x >= 6000:
+                self.x = 660
+        if self.scenes and self.hp > 0:
             self.dy = 0
             self. Dblock = 1
             self.dx = 1
@@ -155,8 +166,14 @@ class Player(gfw.Sprite):
             if self.x >= 1150:
                 self.dx = 0
                 self.x = 1150
-        #print(self.x, self.y)
-        print(self.grabbing)
+        elif self.scenes and self.hp <= 0:
+            self.dy = 0
+            self.y = 500
+            self.x = 350
+            self.Dblock = True
+        print(self.x, self.y)
+        print(self.bubbles)
+        #print(self.grabbing)
         #최대속도 제한 
         if self.dx >= 108:
             self.dx = 107

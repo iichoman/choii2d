@@ -1,5 +1,4 @@
-#play.py
-
+#gameover.py
 from pico2d import * 
 from gfw import *
 from player import Player
@@ -7,7 +6,7 @@ from monster import Monster
 from door import Door 
 from bubble import Bubble
 from interface import Interface
-import stage1
+import stage2
 # map test
 #from settings import *
 #from level import Level
@@ -17,7 +16,7 @@ world = World(['bg', 'player', 'monster', 'HUD', 'door', 'bubble',
     'bubble1', 'bubble2', 'bubble3', 'trap', 'test'])
 
 #canvas_width = 800
-#canvas_height = 6000
+#canvas_height = 600
 canvas_width = 1280
 canvas_height = 960
 shows_bounding_box = False
@@ -36,7 +35,7 @@ def enter():
         world.bg = bg
         return
     #bg = gfw.MapBackground2('res/desert.tmj', fitsWidth=False, fitsHeight=False)
-    bg = gfw.MapBackground('res/cave1-1.json')
+    bg = gfw.ScrollBackground('res/maps/journal_back.png')
     #bg = ScrollBackground('res/maps/ttt.png')
     
     world.append(bg, world.layer.bg)
@@ -67,22 +66,22 @@ def enter():
     bubble3.bg = bg 
     world.append(bubble3, world.layer.bubble3)
 
-    player = Player(x = 125, y = 400)
-
+    player = Player(x = 325, y =500)
+    player.hp = 0
     #player = Player()
     player.bg = bg
     player.scenes = True
+    player. x = 130
     world.append(player, world.layer.player)
 
+    # 몬스터 생성 그냥 랜덤하게? 흠..
     # 방울도 이거처럼 x, y값 하드코딩하면 되기는 함 ㅇㅇ  
     #world.append(Monster(x=700, y=500), world.layer.monster)
     #world.append(Monster(x=900, y=500), world.layer.monster)
     #world.append(Monster(x=800, y=500), world.layer.monster)
     
     # test
-    HUD = Interface(h = canvas_height)
-    HUD.bg = bg 
-    world.append(HUD, world.layer.HUD)
+
     
 def exit():
     world.clear()
@@ -105,8 +104,13 @@ def handle_event(e):
             #else: 
             #    shows_bounding_box = False
         elif e.key == SDLK_z:
-            gfw.push(stage1)
-    
+            quit()
+        elif e.key == SDLK_ESCAPE:
+        	quit()
+    if player.x >= 130:
+    	player.hp = 0
+    	player.dx = 0 
+    	player.x= 130
 
     player.handle_event(e)
 

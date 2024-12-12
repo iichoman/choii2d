@@ -11,13 +11,15 @@ class Door(gfw.Sprite):
 		self.enter = 0
 		self.enter_count = 0
 		self.next = 0
+		self.bub = 0
 	def draw(self):
 		pass
 	def update(self):
 		player = gfw.top().player
 		collides = gfw.collides_box(player, self)
 		if collides:
-			self.enter = 1
+			if player.bubbles >= 3:
+				self.enter = 1
 		else:
 			self.enter = 0
 		if self.enter == 1:

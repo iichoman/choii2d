@@ -487,7 +487,7 @@ class Sonic(gfw.Sprite):
         self.speed = 300
         self.hp = 3
         self.damage = 1
-        self.flip = 'h'
+        self.flip = ' '
         self.state = 0          # 0정지 1이동 2돌진 3스턴 4사망
 
         self.catched = 0

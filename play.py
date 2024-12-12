@@ -36,7 +36,7 @@ def enter():
         world.bg = bg
         return
     #bg = gfw.MapBackground2('res/desert.tmj', fitsWidth=False, fitsHeight=False)
-    bg = gfw.MapBackground('res/cave1-1.json')
+    bg = gfw.ScrollBackground('res/maps/menu_title.png')
     #bg = ScrollBackground('res/maps/ttt.png')
     
     world.append(bg, world.layer.bg)
@@ -105,6 +105,8 @@ def handle_event(e):
             #else: 
             #    shows_bounding_box = False
         elif e.key == SDLK_z:
+            player.x = 500
+            player.y = 500
             gfw.push(stage1)
     
 

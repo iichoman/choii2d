@@ -407,15 +407,7 @@ class MapBackground(ScrollBackground):
                         rcollides = gfw.collides_bb(r_bb, p_bb)
                         tcollides = gfw.collides_bb(t_bb, p_bb)
                       
-                        #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
-                        
-                        #gfw.draw_rectangle(*tile_bb)
-                        gfw.draw_rectangle(*l_bb)
-                        gfw.draw_rectangle(*b_bb)
-                        gfw.draw_rectangle(*r_bb)
-                        gfw.draw_rectangle(*t_bb)
 
-                        gfw.draw_rectangle(*p_bb)
                         
                         if tcollides:
                             #if player.state == 1:
@@ -495,15 +487,8 @@ class MapBackground(ScrollBackground):
                         rcollides = gfw.collides_bb(r_bb, p_bb)
                         tcollides = gfw.collides_bb(t_bb, p_bb)
                       
-                        gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
-                        
-                        #gfw.draw_rectangle(*tile_bb)
-                        gfw.draw_rectangle(*l_bb)
-                        gfw.draw_rectangle(*b_bb)
-                        gfw.draw_rectangle(*r_bb)
-                        gfw.draw_rectangle(*t_bb)
 
-                        gfw.draw_rectangle(*p_bb)
+
                         if tcollides:
                             #if player.state == 1:
                                 player.Dblock = True
@@ -597,15 +582,6 @@ class MapBackground(ScrollBackground):
                 rcollides = gfw.collides_bb(r_bb, p_bb)
                 tcollides = gfw.collides_bb(t_bb, p_bb)
               
-                #gfw.draw_rectangle(left, dst_top - self.tilesize, left + self.tilesize, dst_top)
-                
-                #gfw.draw_rectangle(*tile_bb)
-                gfw.draw_rectangle(*l_bb)
-                gfw.draw_rectangle(*b_bb)
-                gfw.draw_rectangle(*r_bb)
-                gfw.draw_rectangle(*t_bb)
-
-                gfw.draw_rectangle(*p_bb)
                 
                 if tcollides:
                     #if monster.state == 1:

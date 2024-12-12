@@ -72,7 +72,7 @@ def enter():
     bubble3.bg = bg 
     world.append(bubble3, world.layer.bubble3)
 
-    player = Player(x = 2110, y = -2430)
+    player = Player(x = 2110, y = -2000)
     #player = Player()
     player.bg = bg
     world.append(player, world.layer.player)
@@ -80,28 +80,30 @@ def enter():
     # 몬스터 생성 그냥 랜덤하게?
     # 방울도 이거처럼 x, y값 하드코딩하면 되기는 함 ㅇㅇ  
 
-    world.append(Monster(x=200, y=300), world.layer.monster)
+    world.append(Monster(x=1804, y=-810), world.layer.monster)
     #world.append(Monster(x=564, y=-490), world.layer.monster)
     #world.append(Monster(x=2300, y=-810), world.layer.monster)
     #world.append(Monster(x=3911, y=-1470), world.layer.monster)
     #world.append(Monster(x=3290, y=-800), world.layer.monster)
     #world.append(Monster(x=2434, y=-1750), world.layer.monster)
 
-    #world.append(Bat(x=2400, y=640), world.layer.monster)
-    #world.append(Bat(x=2260, y=440), world.layer.monster)
+    world.append(Bat(x=4378, y=-1900), world.layer.monster)
+    world.append(Bat(x=4480, y=-2300), world.layer.monster)
     #world.append(Bat(x=3320, y=-495), world.layer.monster)
     #world.append(Bat(x=3300, y=-1750), world.layer.monster)
     #world.append(Bat(x=1680, y=-1550), world.layer.monster)
 
     # 거미 
-    #world.append(Spider(x=800, y=270), world.layer.monster)
-    #world.append(Spider(x=1987, y=-160), world.layer.monster)
+    world.append(Spider(x=2430, y=960), world.layer.monster)
+    world.append(Spider(x=3946, y=-2060), world.layer.monster)
     #world.append(Spider(x=3400, y=-1750), world.layer.monster)
     #world.append(Spider(x=1990, y=-1550), world.layer.monster)
 
-    world.append(Sonic(x=2745, y=500), world.layer.monster)
-    #world.append(Sonic(x=2130, y=-1890), world.layer.monster)
-    world.append(Arrow(x=1780, y=-2650), world.layer.monster)
+    world.append(Sonic(x=1584, y=-3000), world.layer.monster)
+    world.append(Sonic(x=3892, y=-1100), world.layer.monster)
+    world.append(Sonic(x=2761, y=-2200), world.layer.monster)
+    world.append(Sonic(x=5249, y=-2800), world.layer.monster)
+    #world.append(Arrow(x=1780, y=-2650), world.layer.monster)
     # test
     HUD = Interface(h = canvas_height)
     HUD.bg = bg 

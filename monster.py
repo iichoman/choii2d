@@ -522,6 +522,13 @@ class Sonic(gfw.Sprite):
         elif self.state == 4:
             self.image.clip_composite_draw(128*11, 1280, 128, 128, 0, self.flip, *screen_pos, 100, 100)
     def update(self):
+        player = gfw.top().player
+        if self.catched == 1:
+            if player.flip == ' ':
+                self.x = player.x + 20
+            else: 
+                self.x = player.x - 20
+            self.y = player.y + 30
         if self.dx >= 108:
             self.dx = 107
         if self.dx <= -108:
@@ -550,6 +557,7 @@ class Sonic(gfw.Sprite):
             if self.state == 3 and self.stun_time >= 5:
                 self.state = 0
                 self.stun_time = 0
+                self.catched = 0
             if 0.05 >= self.dx and self.dx >= -0.05:
             #if self.dx == 0:
                 self.dx = 0

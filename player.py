@@ -142,9 +142,7 @@ class Player(gfw.Sprite):
                 self.image.clip_composite_draw(frame_move, 1920, 128, 128, 0, self.flip, *screen_pos, 128, 128)
         
         
-        
-        # 공격박스 그리기 테스트
-        draw_rectangle(*self.get_draw_atk_bb())
+
 
     def update(self):
         #if self.dy

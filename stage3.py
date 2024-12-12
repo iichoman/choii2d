@@ -91,12 +91,12 @@ def enter():
     #world.append(Bat(x=1680, y=-1550), world.layer.monster)
 
     # 거미 
-    world.append(Spider(x=800, y=270), world.layer.monster)
+    world.append(Spider(x=3600, y=-1357), world.layer.monster)
     #world.append(Spider(x=1987, y=-160), world.layer.monster)
     #world.append(Spider(x=3400, y=-1750), world.layer.monster)
     #world.append(Spider(x=1990, y=-1550), world.layer.monster)
 
-    world.append(Sonic(x=2745, y=500), world.layer.monster)
+    world.append(Sonic(x=3406, y=-1555), world.layer.monster)
     #world.append(Sonic(x=2130, y=-1890), world.layer.monster)
     
     # test

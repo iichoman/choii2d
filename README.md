@@ -164,6 +164,8 @@ x키를 눌러 공격: 플레이어가 바라보고 있는 방향으로 공격�
  
  https://youtube.com/shorts/anDYwoK04Os?feature=share
  
-![IMG_0073](https://github.com/user-attachments/assets/ec5d6217-c83f-494b-9a13-29a976311bab)
+
+![IMG_0073](https://github.com/user-attachments/assets/5832b91f-134a-4340-a4bf-a066be94304f)
+
 
  
